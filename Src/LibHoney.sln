@@ -1,0 +1,60 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibHoney", "LibHoney\LibHoney.csproj", "{7F90FF1E-CBB8-47F6-A9D2-7A119D62DD2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibHoney.Tests", "LibHoney.Tests\LibHoney.Tests.csproj", "{B33E32D7-C718-4D46-B9F8-371493DE9AD2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7F90FF1E-CBB8-47F6-A9D2-7A119D62DD2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F90FF1E-CBB8-47F6-A9D2-7A119D62DD2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F90FF1E-CBB8-47F6-A9D2-7A119D62DD2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F90FF1E-CBB8-47F6-A9D2-7A119D62DD2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B33E32D7-C718-4D46-B9F8-371493DE9AD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B33E32D7-C718-4D46-B9F8-371493DE9AD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B33E32D7-C718-4D46-B9F8-371493DE9AD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B33E32D7-C718-4D46-B9F8-371493DE9AD2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = None
+		$1.ResourceNamePolicy = FileFormatDefault
+		$0.TextStylePolicy = $2
+		$2.inheritsSet = VisualStudio
+		$2.inheritsScope = text/plain
+		$2.scope = text/x-csharp
+		$2.EolMarker = Unix
+		$2.FileWidth = 120
+		$0.CSharpFormattingPolicy = $3
+		$3.inheritsSet = Mono
+		$3.inheritsScope = text/x-csharp
+		$3.scope = text/x-csharp
+		$0.StandardHeader = $4
+		$4.Text = 
+		$4.IncludeInNewFiles = True
+		$0.NameConventionPolicy = $5
+		$5.Rules = $6
+		$6.NamingRule = $7
+		$7.Name = Type Parameters
+		$7.AffectedEntity = TypeParameter
+		$7.VisibilityMask = VisibilityMask
+		$7.NamingStyle = PascalCase
+		$7.IncludeInstanceMembers = True
+		$7.IncludeStaticEntities = True
+		$7.RequiredPrefixes = $8
+		$8.String = T
+		$7.RequiredSuffixes = $9
+		$9.String = Exception
+		$0.VersionControlPolicy = $10
+		$10.inheritsSet = Mono
+		$0.XmlFormattingPolicy = $11
+		$11.inheritsSet = null
+		$11.scope = application/config+xml
+	EndGlobalSection
+EndGlobal

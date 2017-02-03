@@ -1,0 +1,7 @@
+[Bb]in/
+[Oo]bj/
+packages/
+*.suo
+*.user
+*.userprefs
+.DS_Store
