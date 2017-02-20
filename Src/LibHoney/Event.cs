@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Newtonsoft.Json;
+
 namespace LibHoney
 {
     public class Event
@@ -58,9 +60,17 @@ namespace LibHoney
             private set;
         }
 
+        public string CreatedAtISO {
+            get { return CreatedAt.ToString ("O"); }
+        }
+
         public string DataSet {
             get;
             private set;
+        }
+
+        internal FieldHolder Fields {
+            get { return fields; }
         }
 
         public object Metadata {
@@ -114,19 +124,22 @@ namespace LibHoney
             if (fields.IsEmpty)
                 throw new SendException ("No metrics added to event. Will not send empty event");
 
-            throw new NotImplementedException ();
+            Honey.Transmission.Send (this);
         }
 
         void SendDroppedResponse ()
         {
-            throw new NotImplementedException ();
+            // XXX (calberto) Add the response object to the responses queue.
         }
 
         static bool ShouldDrop (int rate)
         {
-            lock (rand) {
-                return rand.Next (1, rate + 1) != 1;
-            }
+            return rand.Next (1, rate + 1) != 1;
+        }
+
+        public string ToJSON ()
+        {
+            return JsonConvert.SerializeObject (fields.Fields);
         }
     }
 }

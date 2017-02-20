@@ -10,19 +10,16 @@ namespace LibHoney
 
         public const string DefaultApiHost = "https://api.honeycomb.io";
         public const int DefaultSampleRate = 1;
-        public const int DefaultMaxCurrentBatches = 10;
         const bool DefaultBlock = false;
 
         readonly static FieldHolder fields = new FieldHolder ();
-        readonly static ConcurrentQueue<object> responses = new ConcurrentQueue<object> ();
 
-        //static Transmission transmission;
+        static Transmission transmission;
 
         static void Reset ()
         {
-            IsInitialized = false;
             WriteKey = DataSet = ApiHost = null;
-            SampleRate = MaxConcurrentBatches = 0;
+            SampleRate = 0;
             BlockOnSend = BlockOnResponse = false;
             fields.Clear ();
         }
@@ -56,18 +53,13 @@ namespace LibHoney
             private set;
         }
 
-        public static int MaxConcurrentBatches {
-            get;
-            private set;
-        }
-
-        public static ConcurrentQueue<object> Responses {
-            get { return responses; }
-        }
-
         public static int SampleRate {
             get;
             private set;
+        }
+
+        internal static Transmission Transmission {
+            get { return transmission; }
         }
 
         public static string WriteKey {
@@ -103,33 +95,35 @@ namespace LibHoney
 
         public static void Close ()
         {
-            // TODO - close the transmission object
+            if (!IsInitialized)
+                return;
+            
+            IsInitialized = false;
+
+            transmission.Dispose ();
+            transmission = null;
+
             Reset ();
         }
 
         public static void Init (string writeKey, string dataSet)
         {
-            Init (writeKey, dataSet, DefaultApiHost, DefaultSampleRate, DefaultMaxCurrentBatches,
-                DefaultBlock, DefaultBlock);
+            Init (writeKey, dataSet, DefaultApiHost, DefaultSampleRate, DefaultBlock, DefaultBlock);
         }
 
         public static void Init (string writeKey, string dataSet, string apiHost)
         {
-            Init (writeKey, dataSet, apiHost, DefaultSampleRate, DefaultMaxCurrentBatches,
-                DefaultBlock, DefaultBlock);
+            Init (writeKey, dataSet, apiHost, DefaultSampleRate, DefaultBlock, DefaultBlock);
         }
 
-        public static void Init (string writeKey, string dataSet, string apiHost,
-            int sampleRate, int maxConcurrentBatches)
+        public static void Init (string writeKey, string dataSet, string apiHost, int sampleRate)
         {
-            Init (writeKey, dataSet, apiHost, sampleRate, maxConcurrentBatches,
-                DefaultBlock, DefaultBlock);
+            Init (writeKey, dataSet, apiHost, sampleRate, DefaultBlock, DefaultBlock);
         }
 
-        // TODO - retrieve the global responses field from the Transmission object.
+        // XXX (calberto) expose the responses as a list, either as simple containers or Tasks
         public static void Init (string writeKey, string dataSet, string apiHost,
-            int sampleRate, int maxConcurrentBatches,
-            bool blockOnSend, bool blockOnResponse)
+            int sampleRate, bool blockOnSend, bool blockOnResponse)
         {
             if (writeKey == null)
                 throw new ArgumentNullException (nameof (writeKey));
@@ -140,18 +134,15 @@ namespace LibHoney
 
             if (sampleRate < 1)
                 throw new ArgumentOutOfRangeException (nameof (sampleRate));
-            if (maxConcurrentBatches < 1)
-                throw new ArgumentOutOfRangeException (nameof (maxConcurrentBatches));
 
             WriteKey = writeKey;
             DataSet = dataSet;
             ApiHost = apiHost;
             SampleRate = sampleRate;
-            MaxConcurrentBatches = maxConcurrentBatches;
             BlockOnSend = blockOnSend;
             BlockOnResponse = blockOnResponse;
 
-            //transmission = new Transmission (maxConcurrentBatches, blockOnSend, blockOnWrite);
+            transmission = new Transmission (blockOnSend, blockOnResponse);
 
             IsInitialized = true;
         }

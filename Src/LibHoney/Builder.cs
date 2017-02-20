@@ -90,6 +90,11 @@ namespace LibHoney
             return new Event (fields, WriteKey, DataSet, SampleRate);
         }
 
+        public void SendNow ()
+        {
+            SendNow (Enumerable.Empty<KeyValuePair<string, object>> ());
+        }
+
         public void SendNow (IEnumerable<KeyValuePair<string, object>> data)
         {
             if (data == null)

@@ -45,14 +45,14 @@ namespace LibHoney.Tests
         [Fact]
         public void Ctor ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://", 5, 10);
+            Honey.Init ("key1", "HelloHoney", "http://", 5);
 
             var b = new Builder ();
             Assert.Equal ("key1", b.WriteKey);
             Assert.Equal ("HelloHoney", b.DataSet);
             Assert.Equal (5, b.SampleRate);
 
-            Honey.Init ("key2", "HelloComb", "http://", 15, 20);
+            Honey.Init ("key2", "HelloComb", "http://", 15);
 
             Assert.Equal ("key1", b.WriteKey);
             Assert.Equal ("HelloHoney", b.DataSet);
@@ -97,14 +97,14 @@ namespace LibHoney.Tests
         [Fact]
         public void Clone ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://", 5, 10);
+            Honey.Init ("key1", "HelloHoney", "http://", 5);
 
             var b = new Builder ();
             Assert.Equal ("key1", b.WriteKey);
             Assert.Equal ("HelloHoney", b.DataSet);
             Assert.Equal (5, b.SampleRate);
 
-            Honey.Init ("key2", "HelloComb", "http://", 15, 20);
+            Honey.Init ("key2", "HelloComb", "http://", 15);
 
             var clone = b.Clone ();
             Assert.Equal (true, clone != null);
@@ -116,7 +116,7 @@ namespace LibHoney.Tests
         [Fact]
         public void NewEvent ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://", 5, 10);
+            Honey.Init ("key1", "HelloHoney", "http://", 5);
 
             var b = new Builder ();
             var ev = b.NewEvent ();
@@ -126,7 +126,7 @@ namespace LibHoney.Tests
             Assert.Equal ("http://", ev.ApiHost);
             Assert.Equal (5, ev.SampleRate);
 
-            Honey.Init ("key2", "HelloComb", "http://localhost", 15, 20);
+            Honey.Init ("key2", "HelloComb", "http://localhost", 15);
 
             Assert.Equal ("key1", ev.WriteKey);
             Assert.Equal ("HelloHoney", ev.DataSet);
@@ -148,6 +148,10 @@ namespace LibHoney.Tests
         {
             var b = new Builder ();
             bool excThrown = false;
+            try { b.SendNow (); } catch (SendException) { excThrown = true; }
+            Assert.True (excThrown);
+
+            excThrown = false;
             try { b.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
             Assert.True (excThrown);
         }

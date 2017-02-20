@@ -47,7 +47,7 @@ namespace LibHoney.Tests
         [Fact]
         public void Ctor ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://", 5, 10);
+            Honey.Init ("key1", "HelloHoney", "http://", 5);
 
             var ev = new Event ();
             Assert.Equal ("key1", ev.WriteKey);
@@ -55,7 +55,7 @@ namespace LibHoney.Tests
             Assert.Equal ("http://", ev.ApiHost);
             Assert.Equal (5, ev.SampleRate);
 
-            Honey.Init ("key2", "HelloComb", "http://", 15, 20);
+            Honey.Init ("key2", "HelloComb", "http://", 15);
 
             Assert.Equal ("key1", ev.WriteKey);
             Assert.Equal ("HelloHoney", ev.DataSet);
@@ -135,6 +135,19 @@ namespace LibHoney.Tests
             var ev = new Event ();
             try { ev.SendPreSampled (); } catch (SendException) { excThrown = true; }
             Assert.True (excThrown);
+        }
+
+        [Fact]
+        public void ToJSON ()
+        {
+            var ev = new Event ();
+            Assert.Equal ("{}", ev.ToJSON ());
+
+            ev.AddField ("counter", 13);
+            ev.AddField ("id", "666");
+            ev.AddField ("meta", null);
+            ev.AddField ("r", 3.1416);
+            Assert.Equal ("{\"counter\":13,\"id\":\"666\",\"meta\":null,\"r\":3.1416}", ev.ToJSON ());
         }
     }
 }
