@@ -87,6 +87,30 @@ namespace LibHoney.Tests
         }
 
         [Fact]
+        public void InitBadUri ()
+        {
+            // Bad scheme
+            bool excThrown = false;
+            try { Honey.Init ("abc", "def", "ftp://myhost"); } catch (ArgumentException) { excThrown = true; }
+            Assert.True (excThrown);
+
+            // Incomplete
+            excThrown = false;
+            try { Honey.Init ("abc", "def", "http://"); } catch (ArgumentException) { excThrown = true; }
+            Assert.True (excThrown);
+
+            // Incomplete
+            excThrown = false;
+            try { Honey.Init ("abc", "def", "127.0.0.1"); } catch (ArgumentException) { excThrown = true; }
+            Assert.True (excThrown);
+
+            // Incorrect
+            excThrown = false;
+            try { Honey.Init ("abc", "def", "http://127.0.0.1:::"); } catch (ArgumentException) { excThrown = true; }
+            Assert.True (excThrown);
+        }
+
+        [Fact]
         public void Init ()
         {
             Honey.Init ("key1", "HelloHoney");

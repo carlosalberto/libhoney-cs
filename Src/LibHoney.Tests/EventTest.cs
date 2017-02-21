@@ -47,19 +47,19 @@ namespace LibHoney.Tests
         [Fact]
         public void Ctor ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://", 5);
+            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5);
 
             var ev = new Event ();
             Assert.Equal ("key1", ev.WriteKey);
             Assert.Equal ("HelloHoney", ev.DataSet);
-            Assert.Equal ("http://", ev.ApiHost);
+            Assert.Equal ("http://127.0.0.1", ev.ApiHost);
             Assert.Equal (5, ev.SampleRate);
 
-            Honey.Init ("key2", "HelloComb", "http://", 15);
+            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
 
             Assert.Equal ("key1", ev.WriteKey);
             Assert.Equal ("HelloHoney", ev.DataSet);
-            Assert.Equal ("http://", ev.ApiHost);
+            Assert.Equal ("http://127.0.0.1", ev.ApiHost);
             Assert.Equal (5, ev.SampleRate);
         }
 

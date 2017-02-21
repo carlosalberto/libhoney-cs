@@ -135,6 +135,10 @@ namespace LibHoney
             if (sampleRate < 1)
                 throw new ArgumentOutOfRangeException (nameof (sampleRate));
 
+            Uri apiHostUri;
+            if (!Uri.TryCreate (apiHost, UriKind.Absolute, out apiHostUri) || !IsSchemeSupported (apiHostUri.Scheme))
+                throw new ArgumentException (nameof (apiHost));
+
             WriteKey = writeKey;
             DataSet = dataSet;
             ApiHost = apiHost;
@@ -145,6 +149,11 @@ namespace LibHoney
             transmission = new Transmission (blockOnSend, blockOnResponse);
 
             IsInitialized = true;
+        }
+
+        static bool IsSchemeSupported (string scheme)
+        {
+            return scheme == "http" || scheme == "https";
         }
 
         public static void SendNow (IEnumerable<KeyValuePair<string, object>> data)

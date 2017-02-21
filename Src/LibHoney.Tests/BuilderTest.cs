@@ -45,14 +45,14 @@ namespace LibHoney.Tests
         [Fact]
         public void Ctor ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://", 5);
+            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5);
 
             var b = new Builder ();
             Assert.Equal ("key1", b.WriteKey);
             Assert.Equal ("HelloHoney", b.DataSet);
             Assert.Equal (5, b.SampleRate);
 
-            Honey.Init ("key2", "HelloComb", "http://", 15);
+            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
 
             Assert.Equal ("key1", b.WriteKey);
             Assert.Equal ("HelloHoney", b.DataSet);
@@ -97,14 +97,14 @@ namespace LibHoney.Tests
         [Fact]
         public void Clone ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://", 5);
+            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5);
 
             var b = new Builder ();
             Assert.Equal ("key1", b.WriteKey);
             Assert.Equal ("HelloHoney", b.DataSet);
             Assert.Equal (5, b.SampleRate);
 
-            Honey.Init ("key2", "HelloComb", "http://", 15);
+            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
 
             var clone = b.Clone ();
             Assert.Equal (true, clone != null);
@@ -116,21 +116,21 @@ namespace LibHoney.Tests
         [Fact]
         public void NewEvent ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://", 5);
+            Honey.Init ("key1", "HelloHoney", "http://localhost", 5);
 
             var b = new Builder ();
             var ev = b.NewEvent ();
             Assert.Equal (true, ev != null);
             Assert.Equal ("key1", ev.WriteKey);
             Assert.Equal ("HelloHoney", ev.DataSet);
-            Assert.Equal ("http://", ev.ApiHost);
+            Assert.Equal ("http://localhost", ev.ApiHost);
             Assert.Equal (5, ev.SampleRate);
 
-            Honey.Init ("key2", "HelloComb", "http://localhost", 15);
+            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
 
             Assert.Equal ("key1", ev.WriteKey);
             Assert.Equal ("HelloHoney", ev.DataSet);
-            Assert.Equal ("http://", ev.ApiHost);
+            Assert.Equal ("http://localhost", ev.ApiHost);
             Assert.Equal (5, ev.SampleRate);
         }
 
