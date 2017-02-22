@@ -16,7 +16,7 @@ namespace LibHoney
 
         static Transmission transmission;
 
-        static void Reset ()
+        static void ResetProperties ()
         {
             WriteKey = DataSet = ApiHost = null;
             SampleRate = 0;
@@ -49,8 +49,7 @@ namespace LibHoney
         }
 
         public static bool IsInitialized {
-            get;
-            private set;
+            get { return transmission != null; }
         }
 
         public static int SampleRate {
@@ -95,15 +94,13 @@ namespace LibHoney
 
         public static void Close ()
         {
-            if (!IsInitialized)
+            if (transmission == null)
                 return;
-            
-            IsInitialized = false;
 
             transmission.Dispose ();
             transmission = null;
 
-            Reset ();
+            ResetProperties ();
         }
 
         public static void Init (string writeKey, string dataSet)
@@ -139,16 +136,18 @@ namespace LibHoney
             if (!Uri.TryCreate (apiHost, UriKind.Absolute, out apiHostUri) || !IsSchemeSupported (apiHostUri.Scheme))
                 throw new ArgumentException (nameof (apiHost));
 
+            // Prevent accidental/unintended re-initilization.
+            if (transmission != null)
+                throw new InvalidOperationException ("Honey is initialized already. Close it to initialize again.");
+
+            transmission = new Transmission (BlockOnSend, BlockOnResponse);
+
             WriteKey = writeKey;
             DataSet = dataSet;
             ApiHost = apiHost;
             SampleRate = sampleRate;
             BlockOnSend = blockOnSend;
             BlockOnResponse = blockOnResponse;
-
-            transmission = new Transmission (blockOnSend, blockOnResponse);
-
-            IsInitialized = true;
         }
 
         static bool IsSchemeSupported (string scheme)

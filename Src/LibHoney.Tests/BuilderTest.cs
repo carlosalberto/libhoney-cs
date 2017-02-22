@@ -52,6 +52,7 @@ namespace LibHoney.Tests
             Assert.Equal ("HelloHoney", b.DataSet);
             Assert.Equal (5, b.SampleRate);
 
+            Honey.Close ();
             Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
 
             Assert.Equal ("key1", b.WriteKey);
@@ -104,6 +105,7 @@ namespace LibHoney.Tests
             Assert.Equal ("HelloHoney", b.DataSet);
             Assert.Equal (5, b.SampleRate);
 
+            Honey.Close ();
             Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
 
             var clone = b.Clone ();
@@ -126,6 +128,7 @@ namespace LibHoney.Tests
             Assert.Equal ("http://localhost", ev.ApiHost);
             Assert.Equal (5, ev.SampleRate);
 
+            Honey.Close ();
             Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
 
             Assert.Equal ("key1", ev.WriteKey);

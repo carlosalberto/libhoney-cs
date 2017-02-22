@@ -111,6 +111,15 @@ namespace LibHoney.Tests
         }
 
         [Fact]
+        public void InitWithoutClosing ()
+        {
+            bool excThrown = false;
+            Honey.Init ("abc", "def");
+            try { Honey.Init ("def", "abc"); } catch (InvalidOperationException) { excThrown = true; }
+            Assert.True (excThrown);
+        }
+
+        [Fact]
         public void Init ()
         {
             Honey.Init ("key1", "HelloHoney");

@@ -55,6 +55,7 @@ namespace LibHoney.Tests
             Assert.Equal ("http://127.0.0.1", ev.ApiHost);
             Assert.Equal (5, ev.SampleRate);
 
+            Honey.Close ();
             Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
 
             Assert.Equal ("key1", ev.WriteKey);
