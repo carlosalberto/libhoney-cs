@@ -1,0 +1,6 @@
+language: csharp
+solution: Src/LibHoney.sln
+install:
+  - nuget install xunit.runners -Version 1.9.2 -OutputDirectory testrunner
+script:
+  - mono ./testrunner/xunit.runners.1.9.2/tools/xunit.console.clr4.exe ./Src/LibHoney.Tests/bin/Release/LibHoney.Tests.dll -parallel none
