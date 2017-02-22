@@ -139,7 +139,7 @@ namespace LibHoney.Tests
         }
 
         [Fact]
-        public void ToJSON ()
+        public void ToJSONBasic ()
         {
             var ev = new Event ();
             Assert.Equal ("{}", ev.ToJSON ());
@@ -149,6 +149,81 @@ namespace LibHoney.Tests
             ev.AddField ("meta", null);
             ev.AddField ("r", 3.1416);
             Assert.Equal ("{\"counter\":13,\"id\":\"666\",\"meta\":null,\"r\":3.1416}", ev.ToJSON ());
+
+            ev = new Event (new Dictionary<string, object> () {
+                ["counter"] = 13,
+                ["values"] = new [] { 1, 7, 11 }
+            }, new Dictionary<string, Func<object>> () {
+                ["counter2"] = () => 14,
+                ["values2"] = () => new [] { 2, 8, 12 }
+            });
+            Assert.Equal ("{\"counter\":13,\"values\":\"[1,7,11]\",\"counter2\":14,\"values2\":\"[2,8,12]\"}", ev.ToJSON ());
+        }
+
+        [Fact]
+        public void ToJSONObjects ()
+        {
+            Event ev = null;
+
+            // generic object
+            ev = new Event ();
+            ev.AddField ("obj", new object ());
+            Assert.Equal ("{\"obj\":\"{}\"}", ev.ToJSON ());
+
+            // simple object
+            ev = new Event ();
+            ev.AddField ("obj2", new Hacker () { Name = "Anders" });
+            Assert.Equal ("{\"obj2\":\"{\\\"Name\\\":\\\"Anders\\\"}\"}", ev.ToJSON ());
+
+            // array
+            ev = new Event ();
+            ev.AddField ("arr", new [] { 1, 7, 11 });
+            Assert.Equal ("{\"arr\":\"[1,7,11]\"}", ev.ToJSON ());
+
+            // list
+            ev = new Event ();
+            ev.AddField ("list", new List<int> (new [] { 1, 7, 11 }));
+            Assert.Equal ("{\"list\":\"[1,7,11]\"}", ev.ToJSON ());
+
+            // Dictionary
+            ev = new Event ();
+            ev.AddField ("dict", new Dictionary<string, int> () {
+                ["count"] = 13,
+                ["max"] = 666
+            });
+            Assert.Equal ("{\"dict\":\"{\\\"count\\\":13,\\\"max\\\":666}\"}", ev.ToJSON ());
+
+            // DateTime
+            ev = new Event ();
+            ev.AddField ("datetime", new DateTime (2000, 1, 1, 23, 59, 59));
+            Assert.Equal ("{\"datetime\":\"2000-01-01T23:59:59\"}", ev.ToJSON ());
+
+            // TimeSpan
+            ev = new Event ();
+            ev.AddField ("timespan", new TimeSpan (7, 11, 13, 14, 877));
+            Assert.Equal ("{\"timespan\":\"7.11:13:14.8770000\"}", ev.ToJSON ());
+
+            // Decimal
+            ev = new Event ();
+            ev.AddField ("decimal", new Decimal (3.1416));
+            Assert.Equal ("{\"decimal\":3.1416}", ev.ToJSON ());
+
+            // Enum
+            ev = new Event ();
+            ev.AddField ("enum", HackerType.Backend);
+            Assert.Equal ("{\"enum\":0}", ev.ToJSON ());
+        }
+
+        class Hacker
+        {
+            public string Name { get; set; }
+            internal int Id { get; set; }
+        }
+
+        enum HackerType
+        {
+            Backend,
+            Frontend
         }
     }
 }

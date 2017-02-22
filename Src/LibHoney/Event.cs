@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Newtonsoft.Json;
-
 namespace LibHoney
 {
     public class Event
@@ -139,7 +137,7 @@ namespace LibHoney
 
         public string ToJSON ()
         {
-            return JsonConvert.SerializeObject (fields.Fields);
+            return fields.ToJSON ();
         }
     }
 }

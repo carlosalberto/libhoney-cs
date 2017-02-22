@@ -138,6 +138,22 @@ namespace LibHoney.Tests
         }
 
         [Fact]
+        public void NewEventJSON ()
+        {
+            Honey.Init ("key1", "HelloHoney", "http://localhost", 5);
+
+            var b = new Builder ();
+            b.AddField ("v1", 13);
+            b.AddField ("v2", new [] { 1, 7, 13 });
+            b.AddDynamicField ("d1", () => 14);
+            b.AddDynamicField ("d2", () => new [] { 2, 8, 14 });
+
+            var ev = b.NewEvent ();
+            Assert.Equal (true, ev != null);
+            Assert.Equal ("{\"v1\":13,\"v2\":\"[1,7,13]\",\"d1\":14,\"d2\":\"[2,8,14]\"}", ev.ToJSON ());
+        }
+
+        [Fact]
         public void SendNowNull ()
         {
             var b = new Builder ();
