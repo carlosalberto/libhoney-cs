@@ -10,7 +10,7 @@ namespace LibHoney.Tests
     {
         public void Dispose ()
         {
-            Honey.Close ();
+            Honey.Close (true);
         }
 
         [Fact]

@@ -12,7 +12,7 @@ namespace LibHoney.Tests
     {
         public void Dispose ()
         {
-            Honey.Close ();
+            Honey.Close (true);
         }
 
         [Fact]
@@ -216,8 +216,10 @@ namespace LibHoney.Tests
             Honey.Init ("key1", "HelloHoney");
             Honey.Close ();
 
-            // Again
+            // Again, a few times.
             Honey.Close ();
+            Honey.Close (true);
+            Honey.Close (false);
         }
 
         [Fact]
@@ -240,10 +242,45 @@ namespace LibHoney.Tests
         public void SendEmpty ()
         {
             Honey.Init ("key1", "HelloHoney");
-
+            
             bool excThrown = false;
             try { Honey.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
             Assert.True (excThrown);
+        }
+
+        [Fact]
+        public void InternalState ()
+        {
+            // Default
+            Assert.Equal (true, Honey.Fields.IsEmpty);
+            Assert.Equal (0, Honey.Fields.Fields.Count);
+            Assert.Equal (0, Honey.Fields.DynamicFields.Count);
+            Assert.Equal (true, Honey.Transmission == null);
+
+            // Simple init
+            Honey.Init ("key1", "HelloHoney");
+            Honey.AddField ("counter", 13);
+            Honey.AddField ("value", DateTime.Now);
+            Honey.AddDynamicField ("dynamic_value", () => DateTime.Now);
+
+            Assert.Equal (false, Honey.Fields.IsEmpty);
+            Assert.Equal (2, Honey.Fields.Fields.Count);
+            Assert.Equal (1, Honey.Fields.DynamicFields.Count);
+            Assert.Equal (true, Honey.Transmission != null);
+
+            // Close, but keep the global fields
+            Honey.Close ();
+            Assert.Equal (false, Honey.Fields.IsEmpty);
+            Assert.Equal (2, Honey.Fields.Fields.Count);
+            Assert.Equal (1, Honey.Fields.DynamicFields.Count);
+            Assert.Equal (true, Honey.Transmission == null);
+
+            // Close, discarding the global fields, if any
+            Honey.Close (true);
+            Assert.Equal (true, Honey.Fields.IsEmpty);
+            Assert.Equal (0, Honey.Fields.Fields.Count);
+            Assert.Equal (0, Honey.Fields.DynamicFields.Count);
+            Assert.Equal (true, Honey.Transmission == null);
         }
     }
 }

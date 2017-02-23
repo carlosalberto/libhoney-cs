@@ -16,12 +16,14 @@ namespace LibHoney
 
         static Transmission transmission;
 
-        static void ResetProperties ()
+        static void ResetProperties (bool discardFields)
         {
             WriteKey = DataSet = ApiHost = null;
             SampleRate = 0;
             BlockOnSend = BlockOnResponse = false;
-            fields.Clear ();
+
+            if (discardFields)
+                fields.Clear ();
         }
 
         public static string ApiHost {
@@ -94,13 +96,17 @@ namespace LibHoney
 
         public static void Close ()
         {
-            if (transmission == null)
-                return;
+            Close (false);
+        }
 
-            transmission.Dispose ();
-            transmission = null;
+        public static void Close (bool discardFields)
+        {
+            if (transmission != null) {
+                transmission.Dispose ();
+                transmission = null;
+            }
 
-            ResetProperties ();
+            ResetProperties (discardFields);
         }
 
         public static void Init (string writeKey, string dataSet)

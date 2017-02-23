@@ -10,7 +10,7 @@ namespace LibHoney.Tests
     {
         public void Dispose ()
         {
-            Honey.Close ();
+            Honey.Close (true);
         }
 
         [Fact]
@@ -224,6 +224,41 @@ namespace LibHoney.Tests
         {
             Backend,
             Frontend
+        }
+
+        [Fact]
+        public void InternalState ()
+        {
+            var ev = new Event ();
+            Assert.Equal (true, ev.Fields.IsEmpty);
+            Assert.Equal (0, ev.Fields.Fields.Count);
+            Assert.Equal (0, ev.Fields.DynamicFields.Count);
+
+            ev = new Event (
+                new Dictionary<string, object> () {
+                    ["counter"] = 13
+                },
+                new Dictionary<string, Func<object>> () {
+                    ["dynamic_value"] = () => 17
+                }
+            );
+            Assert.Equal (false, ev.Fields.IsEmpty);
+            Assert.Equal (2, ev.Fields.Fields.Count);
+            Assert.Equal (1, ev.Fields.DynamicFields.Count);
+
+            // Event with global fields included
+            Honey.AddField ("global_counter", 14);
+            Honey.AddDynamicField ("global_dynamic_value", () => 18);
+
+            ev = new Event ();
+            Assert.Equal (false, ev.Fields.IsEmpty);
+            Assert.Equal (2, ev.Fields.Fields.Count);
+            Assert.Equal (1, ev.Fields.DynamicFields.Count);
+
+            ev.AddField ("extra_counter", 33);
+            Assert.Equal (false, ev.Fields.IsEmpty);
+            Assert.Equal (3, ev.Fields.Fields.Count);
+            Assert.Equal (1, ev.Fields.DynamicFields.Count);
         }
     }
 }
