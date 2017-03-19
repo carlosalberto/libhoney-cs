@@ -3,14 +3,16 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LibHoney
 {
     class Transmission : IDisposable
     {
-        Task sendTask;
+        int maxConcurrentBatches;
         BlockingCollection<Event> pending;
+        CountdownEvent countdownEv;
         HttpClient client;
 
         const int TimeoutInSeconds = 10;
@@ -23,7 +25,7 @@ namespace LibHoney
 
         const string HoneyEventsUrl = "/1/events/";
 
-        public Transmission (bool blockOnSend, bool blockOnResponse)
+        public Transmission (int maxConcurrentBatches, bool blockOnSend, bool blockOnResponse)
         {
             BlockOnSend = blockOnSend;
             BlockOnResponse = blockOnResponse;
@@ -34,23 +36,36 @@ namespace LibHoney
             client.DefaultRequestHeaders.UserAgent.ParseAdd (HoneyUserAgent);
             client.Timeout = TimeSpan.FromSeconds (TimeoutInSeconds);
 
-            InitBackgroundSendTask ();
+            this.maxConcurrentBatches = maxConcurrentBatches;
+            InitBackgroundSendThreads ();
         }
 
-        // Used a single thread, from which we do all the delivering,
-        // as we dont want to pollute the threadpool. See:
-        // https://channel9.msdn.com/Events/TechEd/Europe/2013/DEV-B318
-        void InitBackgroundSendTask ()
+        // Use old nice Thread objects, as we do not want to touch
+        // the threadpool, and Task objects make use of it.
+        // Also catch all the exceptions, as not handling them would
+        // crash the *entire* application to crash.
+        void InitBackgroundSendThreads ()
         {
-            sendTask = Task.Run (() => {
-                while (true) {
-                    var ev = pending.Take ();
-                    if (ev == null) // Signaled we are stopping the task.
-                        return;
+            countdownEv = new CountdownEvent (maxConcurrentBatches);
 
-                    DoSend (ev);
-                }
-            });
+            for (int i = 0; i < maxConcurrentBatches; i++) {
+                var t = new Thread (() => {
+                    try {
+                        var ev = pending.Take ();
+                        if (ev == null) // Signaled we are stopping the task.
+                            return;
+
+                        DoSend (ev);
+                    } catch (Exception) {
+                        // (xxx) calberto: Where should we log this error?
+                    } finally {
+                        countdownEv.Signal ();
+                    }
+                });
+
+                t.IsBackground = true;
+                t.Start ();
+            }
         }
 
         public bool BlockOnSend {
@@ -65,15 +80,12 @@ namespace LibHoney
 
         public void Dispose ()
         {
-            // Let the send task know we are done (without forcing a cancellation).
-            pending.Add (null);
+            // Let our threads know we are done (without forcing a cancellation).
+            for (int i = 0; i < maxConcurrentBatches; i++)
+                pending.Add (null);
 
-            // Wait for it to finish - no need to dispose it. See:
-            // https://blogs.msdn.microsoft.com/pfxteam/2012/03/25/do-i-need-to-dispose-of-tasks/
-            try {
-                sendTask.Wait ();
-            } catch (AggregateException) {
-            }
+            // Wait for our threads to be done and be signaled.
+            countdownEv.Wait ();
 
             pending.Dispose ();
             client.Dispose ();

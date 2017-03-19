@@ -61,15 +61,15 @@ namespace LibHoney.Tests
         public void InitNull3 ()
         {
             bool excThrown = false;
-            try { Honey.Init (null, "abc", "def", 1); } catch (ArgumentNullException) { excThrown = true; }
+            try { Honey.Init (null, "abc", "def", 1, 1); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", null, "def", 1); } catch (ArgumentNullException) { excThrown = true; }
+            try { Honey.Init ("abc", null, "def", 1, 1); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", "def", null, 1); } catch (ArgumentNullException) { excThrown = true; }
+            try { Honey.Init ("abc", "def", null, 1, 1); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
@@ -78,11 +78,20 @@ namespace LibHoney.Tests
         {
             // sampleRate
             bool excThrown = false;
-            try { Honey.Init ("abc", "def", "ghi", 0); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+            try { Honey.Init ("abc", "def", "ghi", 0, 1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", "def", "ghi", -1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+            try { Honey.Init ("abc", "def", "ghi", -1, 1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+            Assert.True (excThrown);
+
+            // maxConcurrentBatches
+            excThrown = false;
+            try { Honey.Init ("abc", "def", "ghi", 1, 0); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+            Assert.True (excThrown);
+
+            excThrown = false;
+            try { Honey.Init ("abc", "def", "ghi", 1, -1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
@@ -150,7 +159,7 @@ namespace LibHoney.Tests
         [Fact]
         public void Init3 ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://myhost", 3);
+            Honey.Init ("key1", "HelloHoney", "http://myhost", 3, 6);
 
             Assert.Equal (true, Honey.IsInitialized);
             Assert.Equal ("key1", Honey.WriteKey);
@@ -164,7 +173,7 @@ namespace LibHoney.Tests
         [Fact]
         public void Init4 ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://myhost", 3, true, true);
+            Honey.Init ("key1", "HelloHoney", "http://myhost", 3, 6, true, true);
 
             Assert.Equal (true, Honey.IsInitialized);
             Assert.Equal ("key1", Honey.WriteKey);

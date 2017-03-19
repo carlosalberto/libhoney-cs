@@ -45,7 +45,7 @@ namespace LibHoney.Tests
         [Fact]
         public void Ctor ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5);
+            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5, 10);
 
             var b = new Builder ();
             Assert.Equal ("key1", b.WriteKey);
@@ -53,7 +53,7 @@ namespace LibHoney.Tests
             Assert.Equal (5, b.SampleRate);
 
             Honey.Close ();
-            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
+            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15, 25);
 
             Assert.Equal ("key1", b.WriteKey);
             Assert.Equal ("HelloHoney", b.DataSet);
@@ -98,7 +98,7 @@ namespace LibHoney.Tests
         [Fact]
         public void Clone ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5);
+            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5, 15);
 
             var b = new Builder ();
             Assert.Equal ("key1", b.WriteKey);
@@ -106,7 +106,7 @@ namespace LibHoney.Tests
             Assert.Equal (5, b.SampleRate);
 
             Honey.Close ();
-            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
+            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15, 25);
 
             var clone = b.Clone ();
             Assert.Equal (true, clone != null);
@@ -118,7 +118,7 @@ namespace LibHoney.Tests
         [Fact]
         public void NewEvent ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://localhost", 5);
+            Honey.Init ("key1", "HelloHoney", "http://localhost", 5, 15);
 
             var b = new Builder ();
             var ev = b.NewEvent ();
@@ -129,7 +129,7 @@ namespace LibHoney.Tests
             Assert.Equal (5, ev.SampleRate);
 
             Honey.Close ();
-            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
+            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15, 25);
 
             Assert.Equal ("key1", ev.WriteKey);
             Assert.Equal ("HelloHoney", ev.DataSet);
@@ -140,7 +140,7 @@ namespace LibHoney.Tests
         [Fact]
         public void NewEventJSON ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://localhost", 5);
+            Honey.Init ("key1", "HelloHoney", "http://localhost", 5, 15);
 
             var b = new Builder ();
             b.AddField ("v1", 13);
