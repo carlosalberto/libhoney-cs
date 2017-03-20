@@ -12,11 +12,13 @@ namespace LibHoney
     {
         int maxConcurrentBatches;
         BlockingCollection<Event> pending;
+        BlockingCollection<Response> responses;
         CountdownEvent countdownEv;
         HttpClient client;
 
         const int TimeoutInSeconds = 10;
         const int MaxPendingEvents = 1000;
+        const int MaxPendingResponses = 2000;
 
         const string HoneyTeamKey = "X-Hny-Team";
         const string HoneySamplerate = "X-Hny-Samplerate";
@@ -31,6 +33,7 @@ namespace LibHoney
             BlockOnResponse = blockOnResponse;
 
             pending = new BlockingCollection<Event> (MaxPendingEvents);
+            responses = new BlockingCollection<Response> (MaxPendingResponses);
 
             client = new HttpClient ();
             client.DefaultRequestHeaders.UserAgent.ParseAdd (HoneyUserAgent);
@@ -78,6 +81,10 @@ namespace LibHoney
             private set;
         }
 
+        public BlockingCollection<Response> Responses {
+            get { return responses; }
+        }
+
         public void Dispose ()
         {
             // Let our threads know we are done (without forcing a cancellation).
@@ -86,6 +93,9 @@ namespace LibHoney
 
             // Wait for our threads to be done and be signaled.
             countdownEv.Wait ();
+
+            // Try to signal to the responses queue that nothing more is coming
+            responses.TryAdd (null);
 
             pending.Dispose ();
             client.Dispose ();
@@ -101,7 +111,14 @@ namespace LibHoney
                 success = pending.TryAdd (ev);
 
             if (!success) {
-                // XXX (calberto): Add an overflow error to a responses queue.
+                var res = new Response () {
+                    Metadata = ev.Metadata,
+                    ErrorMessage = "Event dropped; queue overflow"
+                };
+                if (BlockOnResponse)
+                    responses.Add (res);
+                else
+                    responses.TryAdd (res);
             }
         }
 
@@ -118,18 +135,32 @@ namespace LibHoney
             req.Headers.Add (HoneySamplerate, ev.SampleRate.ToString ());
             req.Headers.Add (HoneyEventTime, ev.CreatedAtISO);
 
-            // XXX (calberto): Report errors here as a response available to the user:
-            // 1. status code != 200
-            // 2. TaskCanceledOperation (timeout)
-            // 3. WebException (connection refused)
+            HttpResponseMessage result = null;
+            DateTime start = DateTime.Now;
+
+            // XXX (calberto): Report/log errors:
+            // * TaskCanceledOperation (timeout)
+            // * WebException (connection refused)
             try {
                 // Get the Result right away to hint the scheduler to run the task inline.
-                client.SendAsync (req).Wait ();
+                result = client.SendAsync (req).Result;
             } catch (AggregateException exc) {
                 exc.Handle ((arg) => {
                     return arg.InnerException is WebException || arg.InnerException is TaskCanceledException;
                 });
+                return;
             }
+
+            var res = new Response () {
+                StatusCode = result.StatusCode,
+                Duration = DateTime.Now - start,
+                Metadata = ev.Metadata,
+                Body = result.Content.ReadAsStringAsync ().Result
+            };
+            if (BlockOnResponse)
+                responses.Add (res);
+            else
+                responses.TryAdd (res);
         }
     }
 }

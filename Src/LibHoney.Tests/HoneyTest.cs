@@ -25,8 +25,26 @@ namespace LibHoney.Tests
             Assert.Equal (0, Honey.SampleRate);
             Assert.Equal (false, Honey.BlockOnSend);
             Assert.Equal (false, Honey.BlockOnResponse);
-            //Assert.Equal (true, Honey.Responses != null);
-            //Assert.Equal (0, Honey.Responses.Count);
+            Assert.Equal (true, Honey.Responses != null);
+            Assert.Equal (0, Honey.Responses.Count);
+        }
+
+        [Fact]
+        public void DefaultsAfterClose ()
+        {
+            Honey.Init ("key1", "HelloHoney", "http://myhost", 3, 6, true, true);
+            Honey.Close ();
+
+            Assert.Equal (false, Honey.IsInitialized);
+            Assert.Equal (null, Honey.WriteKey);
+            Assert.Equal (null, Honey.DataSet);
+            Assert.Equal (null, Honey.ApiHost);
+            Assert.Equal (0, Honey.SampleRate);
+            Assert.Equal (false, Honey.BlockOnSend);
+            Assert.Equal (false, Honey.BlockOnResponse);
+            Assert.Equal (true, Honey.Responses != null);
+            Assert.Equal (1, Honey.Responses.Count); // prev transmission, null signaling termination
+            Assert.Equal (null, Honey.Responses.Take ());
         }
 
         [Fact]
@@ -258,15 +276,19 @@ namespace LibHoney.Tests
         }
 
         [Fact]
-        public void InternalState ()
+        public void InternalStateDefault ()
         {
-            // Default
             Assert.Equal (true, Honey.Fields.IsEmpty);
             Assert.Equal (0, Honey.Fields.Fields.Count);
             Assert.Equal (0, Honey.Fields.DynamicFields.Count);
             Assert.Equal (true, Honey.Transmission == null);
+            Assert.Equal (true, Honey.Responses != null);
+            Assert.Equal (Honey.Responses.BoundedCapacity, 1);
+        }
 
-            // Simple init
+        [Fact]
+        public void InternalStateAfterInit ()
+        {
             Honey.Init ("key1", "HelloHoney");
             Honey.AddField ("counter", 13);
             Honey.AddField ("value", DateTime.Now);
@@ -276,20 +298,36 @@ namespace LibHoney.Tests
             Assert.Equal (2, Honey.Fields.Fields.Count);
             Assert.Equal (1, Honey.Fields.DynamicFields.Count);
             Assert.Equal (true, Honey.Transmission != null);
+            Assert.Equal (true, Honey.Responses != null);
+            Assert.Equal (Honey.Transmission.Responses, Honey.Responses);
+            Assert.Equal (true, Honey.Responses.BoundedCapacity > 1);
+        }
 
-            // Close, but keep the global fields
+        [Fact]
+        public void InternalStateAfterClose ()
+        {
+            Honey.Init ("key1", "HelloHoney");
+            Honey.AddField ("counter", 13);
+            Honey.AddField ("value", DateTime.Now);
+            Honey.AddDynamicField ("dynamic_value", () => DateTime.Now);
+
+            // Close, but keep the global fields/responses
             Honey.Close ();
             Assert.Equal (false, Honey.Fields.IsEmpty);
             Assert.Equal (2, Honey.Fields.Fields.Count);
             Assert.Equal (1, Honey.Fields.DynamicFields.Count);
             Assert.Equal (true, Honey.Transmission == null);
+            Assert.Equal (true, Honey.Responses != null);
+            Assert.Equal (true, Honey.Responses.BoundedCapacity > 1); // prev transmission
 
-            // Close, discarding the global fields, if any
+            // Close, discarding the global fields/responses, if any
             Honey.Close (true);
             Assert.Equal (true, Honey.Fields.IsEmpty);
             Assert.Equal (0, Honey.Fields.Fields.Count);
             Assert.Equal (0, Honey.Fields.DynamicFields.Count);
             Assert.Equal (true, Honey.Transmission == null);
+            Assert.Equal (true, Honey.Responses != null);
+            Assert.Equal (true, Honey.Responses.BoundedCapacity == 1); // default
         }
     }
 }

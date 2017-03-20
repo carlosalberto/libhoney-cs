@@ -16,15 +16,23 @@ namespace LibHoney
         readonly static FieldHolder fields = new FieldHolder ();
 
         static Transmission transmission;
+        static BlockingCollection<Response> responses;
 
-        static void ResetProperties (bool discardFields)
+        static Honey ()
+        {
+            ResetProperties (true);
+        }
+
+        static void ResetProperties (bool discardState)
         {
             WriteKey = DataSet = ApiHost = null;
             SampleRate = 0;
             BlockOnSend = BlockOnResponse = false;
 
-            if (discardFields)
+            if (discardState) {
                 fields.Clear ();
+                responses = new BlockingCollection<Response> (1);
+            }
         }
 
         public static string ApiHost {
@@ -53,6 +61,12 @@ namespace LibHoney
 
         public static bool IsInitialized {
             get { return transmission != null; }
+        }
+
+        public static BlockingCollection<Response> Responses {
+            get {
+                return responses;
+            }
         }
 
         public static int SampleRate {
@@ -100,14 +114,14 @@ namespace LibHoney
             Close (false);
         }
 
-        public static void Close (bool discardFields)
+        public static void Close (bool discardState)
         {
             if (transmission != null) {
                 transmission.Dispose ();
                 transmission = null;
             }
 
-            ResetProperties (discardFields);
+            ResetProperties (discardState);
         }
 
         public static void Init (string writeKey, string dataSet)
@@ -149,7 +163,8 @@ namespace LibHoney
             if (transmission != null)
                 throw new InvalidOperationException ("Honey is initialized already. Close it to initialize again.");
 
-            transmission = new Transmission (maxConcurrentBatches, BlockOnSend, BlockOnResponse);
+            transmission = new Transmission (maxConcurrentBatches, blockOnSend, blockOnResponse);
+            responses = transmission.Responses;
 
             WriteKey = writeKey;
             DataSet = dataSet;
