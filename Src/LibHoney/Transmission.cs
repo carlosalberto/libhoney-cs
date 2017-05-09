@@ -10,15 +10,15 @@ namespace LibHoney
 {
     class Transmission : IDisposable
     {
-        int maxConcurrentBatches;
         BlockingCollection<Event> pending;
         BlockingCollection<Response> responses;
         CountdownEvent countdownEv;
         HttpClient client;
+        bool disposed;
 
-        const int TimeoutInSeconds = 10;
-        const int MaxPendingEvents = 1000;
-        const int MaxPendingResponses = 2000;
+        public const int DefaultTimeoutInSeconds = 10;
+        public const int DefaultMaxPendingEvents = 1000;
+        public const int DefaultMaxPendingResponses = 2000;
 
         const string HoneyTeamKey = "X-Hny-Team";
         const string HoneySamplerate = "X-Hny-Samplerate";
@@ -28,18 +28,25 @@ namespace LibHoney
         const string HoneyEventsUrl = "/1/events/";
 
         public Transmission (int maxConcurrentBatches, bool blockOnSend, bool blockOnResponse)
+            : this (maxConcurrentBatches, blockOnSend, blockOnResponse,
+                    DefaultTimeoutInSeconds, DefaultMaxPendingEvents, DefaultMaxPendingResponses)
         {
+        }
+
+        public Transmission (int maxConcurrentBatches, bool blockOnSend, bool blockOnResponse,
+                             int timeout, int maxPendingEvents, int maxPendingResponses)
+        {
+            MaxConcurrentBatches = maxConcurrentBatches;
             BlockOnSend = blockOnSend;
             BlockOnResponse = blockOnResponse;
 
-            pending = new BlockingCollection<Event> (MaxPendingEvents);
-            responses = new BlockingCollection<Response> (MaxPendingResponses);
+            pending = new BlockingCollection<Event> (maxPendingEvents);
+            responses = new BlockingCollection<Response> (maxPendingResponses);
 
             client = new HttpClient ();
             client.DefaultRequestHeaders.UserAgent.ParseAdd (HoneyUserAgent);
-            client.Timeout = TimeSpan.FromSeconds (TimeoutInSeconds);
+            client.Timeout = TimeSpan.FromSeconds (timeout);
 
-            this.maxConcurrentBatches = maxConcurrentBatches;
             InitBackgroundSendThreads ();
         }
 
@@ -49,16 +56,18 @@ namespace LibHoney
         // crash the *entire* application to crash.
         void InitBackgroundSendThreads ()
         {
-            countdownEv = new CountdownEvent (maxConcurrentBatches);
+            countdownEv = new CountdownEvent (MaxConcurrentBatches);
 
-            for (int i = 0; i < maxConcurrentBatches; i++) {
+            for (int i = 0; i < MaxConcurrentBatches; i++) {
                 var t = new Thread (() => {
                     try {
-                        var ev = pending.Take ();
-                        if (ev == null) // Signaled we are stopping the task.
-                            return;
+                        while (true) {
+                            var ev = pending.Take ();
+                            if (ev == null) // Signaled we are stopping the task.
+                                break;
 
-                        DoSend (ev);
+                            DoSend (ev);
+                        }
                     } catch (Exception) {
                         // (xxx) calberto: Where should we log this error?
                     } finally {
@@ -81,14 +90,28 @@ namespace LibHoney
             private set;
         }
 
+        public int MaxConcurrentBatches {
+            get;
+            private set;
+        }
+
         public BlockingCollection<Response> Responses {
             get { return responses; }
         }
 
+        public BlockingCollection<Event> PendingEvents {
+            get { return pending; }
+        }
+
         public void Dispose ()
         {
+            if (disposed)
+                return;
+
+            disposed = true;
+
             // Let our threads know we are done (without forcing a cancellation).
-            for (int i = 0; i < maxConcurrentBatches; i++)
+            for (int i = 0; i < MaxConcurrentBatches; i++)
                 pending.Add (null);
 
             // Wait for our threads to be done and be signaled.
@@ -103,6 +126,7 @@ namespace LibHoney
 
         public void Send (Event ev)
         {
+            ev = ev.Clone (); // Prevent further changes
             bool success = true;
 
             if (BlockOnSend)
@@ -136,6 +160,7 @@ namespace LibHoney
             req.Headers.Add (HoneyEventTime, ev.CreatedAtISO);
 
             HttpResponseMessage result = null;
+            Exception capturedExc = null;
             DateTime start = DateTime.Now;
 
             // XXX (calberto): Report/log errors:
@@ -145,18 +170,27 @@ namespace LibHoney
                 // Get the Result right away to hint the scheduler to run the task inline.
                 result = client.SendAsync (req).Result;
             } catch (AggregateException exc) {
-                exc.Handle ((arg) => {
-                    return arg.InnerException is WebException || arg.InnerException is TaskCanceledException;
+                exc.Handle ((innerExc) => {
+                    return innerExc is WebException || innerExc is TaskCanceledException;
                 });
-                return;
+
+                capturedExc = exc.InnerException;
             }
 
-            var res = new Response () {
-                StatusCode = result.StatusCode,
-                Duration = DateTime.Now - start,
-                Metadata = ev.Metadata,
-                Body = result.Content.ReadAsStringAsync ().Result
-            };
+            Response res;
+            if (result != null)
+                res = new Response () {
+                    StatusCode = result.StatusCode,
+                    Duration = DateTime.Now - start,
+                    Metadata = ev.Metadata,
+                    Body = result.Content.ReadAsStringAsync ().Result
+                };
+            else
+                res = new Response () {
+                    ErrorMessage = "Error when sending the event: " + capturedExc.Message,
+                    Metadata = ev.Metadata
+                };
+
             if (BlockOnResponse)
                 responses.Add (res);
             else

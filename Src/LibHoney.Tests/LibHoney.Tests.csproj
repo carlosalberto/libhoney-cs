@@ -49,6 +49,8 @@
     <Compile Include="HoneyTest.cs" />
     <Compile Include="EventTest.cs" />
     <Compile Include="BuilderTest.cs" />
+    <Compile Include="TransmissionTest.cs" />
+    <Compile Include="HttpTestServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

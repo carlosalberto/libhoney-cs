@@ -48,14 +48,25 @@ namespace LibHoney
             SampleRate = sampleRate;
         }
 
+        internal Event (Event ev)
+        {
+            fields.Add (ev.Fields);
+            CreatedAt = ev.CreatedAt;
+            WriteKey = ev.WriteKey;
+            DataSet = ev.DataSet;
+            ApiHost = ev.ApiHost;
+            SampleRate = ev.SampleRate;
+            Metadata = ev.Metadata;
+        }
+
         public string ApiHost {
             get;
-            private set;
+            internal set;
         }
 
         public DateTime CreatedAt {
             get;
-            private set;
+            internal set;
         }
 
         public string CreatedAtISO {
@@ -64,7 +75,7 @@ namespace LibHoney
 
         public string DataSet {
             get;
-            private set;
+            internal set;
         }
 
         internal FieldHolder Fields {
@@ -78,12 +89,12 @@ namespace LibHoney
 
         public int SampleRate {
             get;
-            private set;
+            set;
         }
 
         public string WriteKey {
             get;
-            private set;
+            internal set;
         }
 
         public void Add (IEnumerable<KeyValuePair<string, object>> data)
@@ -100,6 +111,12 @@ namespace LibHoney
                 throw new ArgumentNullException (nameof (name));
 
             fields.AddField (name, value);
+        }
+
+        // Convenience method.
+        public Event Clone ()
+        {
+            return new Event (this);
         }
 
         public void Send ()

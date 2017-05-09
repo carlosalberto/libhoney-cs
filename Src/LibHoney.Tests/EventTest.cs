@@ -28,7 +28,7 @@ namespace LibHoney.Tests
         public void CtorNull ()
         {
             bool excThrown = false;
-            try { new Event (null); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Event ((IEnumerable<KeyValuePair<string, object>>)null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
