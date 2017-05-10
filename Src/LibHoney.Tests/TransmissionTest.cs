@@ -10,17 +10,18 @@ namespace LibHoney.Tests
         public TransmissionFixture ()
         {
             DataSet = "test-honey";
-            Server = new HttpTestServer ("http://127.0.0.1:8000/1/events/" + DataSet + "/");
         }
 
         public void Dispose ()
         {
-            Server.Dispose ();
         }
 
-        public HttpTestServer Server {
-            get;
-            set;
+        // Had been trying to keep a single server for
+        // all the TransmissionTest methods, but it hangs often. Maybe a client
+        // doesn't like to be started-stopped-started often.
+        public HttpTestServer CreateServer ()
+        {
+            return new HttpTestServer ("http://127.0.0.1:8000/1/events/" + DataSet + "/");
         }
 
         public String DataSet {
@@ -39,9 +40,7 @@ namespace LibHoney.Tests
         {
             this.fixture = fixture;
 
-            Server = fixture.Server;
-            Server.Clear ();
-
+            Server = fixture.CreateServer ();
             SampleEvent = CreateSampleEvent ();
         }
 
