@@ -71,10 +71,10 @@ namespace LibHoney.Tests
 
         public void Dispose ()
         {
-            Server.Stop ();
-
             if (CurrentTransmission != null)
                 CurrentTransmission.Dispose ();
+
+            Server.Stop ();
         }
 
         [Fact]
