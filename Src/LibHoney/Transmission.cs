@@ -170,16 +170,16 @@ namespace LibHoney
             req.Headers.Add (HoneyEventTime, ev.CreatedAtISO);
 
             HttpResponseMessage result = null;
-            Exception capturedExc = null;
             DateTime start = DateTime.Now;
+            string errorMessage = null;
 
             try {
                 // Get the Result right away to hint the scheduler to run the task inline.
                 result = client.SendAsync (req).Result;
             } catch (AggregateException exc) {
                 // Ignore network errors, but report them as responses.
-                exc.Handle (IsNetworkError);
-                capturedExc = exc.InnerException;
+                if (!IsNetworkError (exc.InnerException, out errorMessage))
+                    throw;
             }
 
             Response res;
@@ -190,7 +190,7 @@ namespace LibHoney
                 };
             else
                 res = new Response () {
-                    ErrorMessage = "Error while sending the event: " + capturedExc.Message,
+                    ErrorMessage = "Error while sending the event: " + errorMessage,
                 };
 
             res.Duration = DateTime.Now - start;
@@ -198,19 +198,32 @@ namespace LibHoney
             EnqueueResponse (res);
         }
 
-        static bool IsNetworkError (Exception exc)
+        static bool IsNetworkError (Exception exc, out string errorMessage)
         {
-            // Connection refused or network error
-            if (exc is HttpRequestException || exc is WebException)
-                return true;
+            errorMessage = null;
 
-            // Time out.
-            if (exc is TaskCanceledException)
-                return true;
+            // .Net and newer versions of Mono wrap a WebException
+            // with a HttpRequestException.
+            if (exc is HttpRequestException)
+                exc = exc.InnerException;
 
-            // Error while processing the network stream
-            if (exc is IOException)
+            // 1. Connection refused or network error
+            if (exc is WebException) {
+                errorMessage = "Network error";
                 return true;
+            }
+
+            // 2. Time out.
+            if (exc is TaskCanceledException) {
+                errorMessage = "Operation timed out";
+                return true;
+            }
+
+            // 3. Error while processing the network stream
+            if (exc is IOException) {
+                errorMessage = "Failed to read the response data";
+                return true;
+            }
 
             return false;
         }
