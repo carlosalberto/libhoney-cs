@@ -168,6 +168,25 @@ namespace LibHoney.Tests
         }
 
         [Fact]
+        public void NoServer ()
+        {
+            var t = CurrentTransmission = new Transmission (1, false, false, 1, 3, 3);
+
+            for (int i = 0; i < 3; i++)
+                t.Send (SampleEvent);
+            t.Dispose ();
+
+            for (int i = 0; i < 3; i++) {
+                Response res;
+                t.Responses.TryTake (out res);
+                Assert.NotNull (res);
+                Assert.Equal ("Error when sending the event: Error: ConnectFailure (Connection refused)",
+                              res.ErrorMessage);
+                Assert.Equal (res.Metadata, SampleEvent.Metadata);
+            }
+        }
+
+        [Fact]
         public void Payload ()
         {
             var t = CurrentTransmission = new Transmission (1, false, false, 1, 10, 10);
