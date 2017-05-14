@@ -68,8 +68,12 @@ namespace LibHoney
 
                             DoSend (ev);
                         }
-                    } catch (Exception) {
-                        // (xxx) calberto: Where should we log this error?
+                    } catch (Exception exc) {
+                        // Unexpected error - report it and let the thread be done.
+                        var res = new Response () {
+                            ErrorMessage = "Fatal error: " + exc.Message,
+                        };
+                        EnqueueResponse (res);
                     } finally {
                         countdownEv.Signal ();
                     }
@@ -139,11 +143,16 @@ namespace LibHoney
                     Metadata = ev.Metadata,
                     ErrorMessage = "Event dropped; queue overflow"
                 };
-                if (BlockOnResponse)
-                    responses.Add (res);
-                else
-                    responses.TryAdd (res);
+                EnqueueResponse (res);
             }
+        }
+
+        void EnqueueResponse (Response res)
+        {
+            if (BlockOnResponse)
+                responses.Add (res);
+            else
+                responses.TryAdd (res);
         }
 
         void DoSend (Event ev)
@@ -191,10 +200,7 @@ namespace LibHoney
                     Metadata = ev.Metadata
                 };
 
-            if (BlockOnResponse)
-                responses.Add (res);
-            else
-                responses.TryAdd (res);
+            EnqueueResponse (res);
         }
     }
 }
