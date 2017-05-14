@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -172,17 +173,12 @@ namespace LibHoney
             Exception capturedExc = null;
             DateTime start = DateTime.Now;
 
-            // XXX (calberto): Report/log errors:
-            // * TaskCanceledOperation (timeout)
-            // * WebException (connection refused)
             try {
                 // Get the Result right away to hint the scheduler to run the task inline.
                 result = client.SendAsync (req).Result;
             } catch (AggregateException exc) {
-                exc.Handle ((innerExc) => {
-                    return innerExc is WebException || innerExc is TaskCanceledException;
-                });
-
+                // Ignore network errors, but report them as responses.
+                exc.Handle (IsNetworkError);
                 capturedExc = exc.InnerException;
             }
 
@@ -190,17 +186,33 @@ namespace LibHoney
             if (result != null)
                 res = new Response () {
                     StatusCode = result.StatusCode,
-                    Duration = DateTime.Now - start,
-                    Metadata = ev.Metadata,
                     Body = result.Content.ReadAsStringAsync ().Result
                 };
             else
                 res = new Response () {
-                    ErrorMessage = "Error when sending the event: " + capturedExc.Message,
-                    Metadata = ev.Metadata
+                    ErrorMessage = "Error while sending the event: " + capturedExc.Message,
                 };
 
+            res.Duration = DateTime.Now - start;
+            res.Metadata = ev.Metadata;
             EnqueueResponse (res);
+        }
+
+        static bool IsNetworkError (Exception exc)
+        {
+            // Connection refused or network error
+            if (exc is HttpRequestException || exc is WebException)
+                return true;
+
+            // Time out.
+            if (exc is TaskCanceledException)
+                return true;
+
+            // Error while processing the network stream
+            if (exc is IOException)
+                return true;
+
+            return false;
         }
     }
 }

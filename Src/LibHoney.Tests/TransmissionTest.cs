@@ -163,7 +163,8 @@ namespace LibHoney.Tests
             Response res;
             t.Responses.TryTake (out res, TimeSpan.FromMilliseconds (100));
             Assert.NotNull (res);
-            Assert.Equal ("Error when sending the event: A task was canceled.", res.ErrorMessage);
+            Assert.Equal ("Error while sending the event: A task was canceled.", res.ErrorMessage);
+            Assert.True (res.Duration > TimeSpan.FromSeconds (0));
             Assert.Equal (res.Metadata, SampleEvent.Metadata);
         }
 
@@ -180,8 +181,9 @@ namespace LibHoney.Tests
                 Response res;
                 t.Responses.TryTake (out res);
                 Assert.NotNull (res);
-                Assert.Equal ("Error when sending the event: Error: ConnectFailure (Connection refused)",
+                Assert.Equal ("Error while sending the event: Error: ConnectFailure (Connection refused)",
                               res.ErrorMessage);
+                Assert.True (res.Duration > TimeSpan.FromSeconds (0));
                 Assert.Equal (res.Metadata, SampleEvent.Metadata);
             }
         }
