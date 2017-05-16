@@ -1,20 +1,25 @@
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LibHoney
 {
     class Transmission : IDisposable
     {
-        Task sendTask;
         BlockingCollection<Event> pending;
+        BlockingCollection<Response> responses;
+        CountdownEvent countdownEv;
         HttpClient client;
+        bool disposed;
 
-        const int TimeoutInSeconds = 10;
-        const int MaxPendingEvents = 1000;
+        public const int DefaultTimeoutInSeconds = 10;
+        public const int DefaultMaxPendingEvents = 1000;
+        public const int DefaultMaxPendingResponses = 2000;
 
         const string HoneyTeamKey = "X-Hny-Team";
         const string HoneySamplerate = "X-Hny-Samplerate";
@@ -23,34 +28,61 @@ namespace LibHoney
 
         const string HoneyEventsUrl = "/1/events/";
 
-        public Transmission (bool blockOnSend, bool blockOnResponse)
+        public Transmission (int maxConcurrentBatches, bool blockOnSend, bool blockOnResponse)
+            : this (maxConcurrentBatches, blockOnSend, blockOnResponse,
+                    DefaultTimeoutInSeconds, DefaultMaxPendingEvents, DefaultMaxPendingResponses)
         {
+        }
+
+        public Transmission (int maxConcurrentBatches, bool blockOnSend, bool blockOnResponse,
+                             int timeout, int maxPendingEvents, int maxPendingResponses)
+        {
+            MaxConcurrentBatches = maxConcurrentBatches;
             BlockOnSend = blockOnSend;
             BlockOnResponse = blockOnResponse;
 
-            pending = new BlockingCollection<Event> (MaxPendingEvents);
+            pending = new BlockingCollection<Event> (maxPendingEvents);
+            responses = new BlockingCollection<Response> (maxPendingResponses);
 
             client = new HttpClient ();
             client.DefaultRequestHeaders.UserAgent.ParseAdd (HoneyUserAgent);
-            client.Timeout = TimeSpan.FromSeconds (TimeoutInSeconds);
+            client.Timeout = TimeSpan.FromSeconds (timeout);
 
-            InitBackgroundSendTask ();
+            InitBackgroundSendThreads ();
         }
 
-        // Used a single thread, from which we do all the delivering,
-        // as we dont want to pollute the threadpool. See:
-        // https://channel9.msdn.com/Events/TechEd/Europe/2013/DEV-B318
-        void InitBackgroundSendTask ()
+        // Use old nice Thread objects, as we do not want to touch
+        // the threadpool, and Task objects make use of it.
+        // Also catch all the exceptions, as not handling them would
+        // crash the *entire* application to crash.
+        void InitBackgroundSendThreads ()
         {
-            sendTask = Task.Run (() => {
-                while (true) {
-                    var ev = pending.Take ();
-                    if (ev == null) // Signaled we are stopping the task.
-                        return;
+            countdownEv = new CountdownEvent (MaxConcurrentBatches);
 
-                    DoSend (ev);
-                }
-            });
+            for (int i = 0; i < MaxConcurrentBatches; i++) {
+                var t = new Thread (() => {
+                    try {
+                        while (true) {
+                            var ev = pending.Take ();
+                            if (ev == null) // Signaled we are stopping the task.
+                                break;
+
+                            DoSend (ev);
+                        }
+                    } catch (Exception exc) {
+                        // Unexpected error - report it and let the thread be done.
+                        var res = new Response () {
+                            ErrorMessage = "Fatal error: " + exc.Message,
+                        };
+                        EnqueueResponse (res);
+                    } finally {
+                        countdownEv.Signal ();
+                    }
+                });
+
+                t.IsBackground = true;
+                t.Start ();
+            }
         }
 
         public bool BlockOnSend {
@@ -63,17 +95,35 @@ namespace LibHoney
             private set;
         }
 
+        public int MaxConcurrentBatches {
+            get;
+            private set;
+        }
+
+        public BlockingCollection<Response> Responses {
+            get { return responses; }
+        }
+
+        public BlockingCollection<Event> PendingEvents {
+            get { return pending; }
+        }
+
         public void Dispose ()
         {
-            // Let the send task know we are done (without forcing a cancellation).
-            pending.Add (null);
+            if (disposed)
+                return;
 
-            // Wait for it to finish - no need to dispose it. See:
-            // https://blogs.msdn.microsoft.com/pfxteam/2012/03/25/do-i-need-to-dispose-of-tasks/
-            try {
-                sendTask.Wait ();
-            } catch (AggregateException) {
-            }
+            disposed = true;
+
+            // Let our threads know we are done (without forcing a cancellation).
+            for (int i = 0; i < MaxConcurrentBatches; i++)
+                pending.Add (null);
+
+            // Wait for our threads to be done and be signaled.
+            countdownEv.Wait ();
+
+            // Try to signal to the responses queue that nothing more is coming
+            responses.TryAdd (null);
 
             pending.Dispose ();
             client.Dispose ();
@@ -81,6 +131,7 @@ namespace LibHoney
 
         public void Send (Event ev)
         {
+            ev = ev.Clone (); // Prevent further changes
             bool success = true;
 
             if (BlockOnSend)
@@ -89,8 +140,20 @@ namespace LibHoney
                 success = pending.TryAdd (ev);
 
             if (!success) {
-                // XXX (calberto): Add an overflow error to a responses queue.
+                var res = new Response () {
+                    Metadata = ev.Metadata,
+                    ErrorMessage = "Event dropped; queue overflow"
+                };
+                EnqueueResponse (res);
             }
+        }
+
+        void EnqueueResponse (Response res)
+        {
+            if (BlockOnResponse)
+                responses.Add (res);
+            else
+                responses.TryAdd (res);
         }
 
         void DoSend (Event ev)
@@ -106,18 +169,63 @@ namespace LibHoney
             req.Headers.Add (HoneySamplerate, ev.SampleRate.ToString ());
             req.Headers.Add (HoneyEventTime, ev.CreatedAtISO);
 
-            // XXX (calberto): Report errors here as a response available to the user:
-            // 1. status code != 200
-            // 2. TaskCanceledOperation (timeout)
-            // 3. WebException (connection refused)
+            HttpResponseMessage result = null;
+            DateTime start = DateTime.Now;
+            string errorMessage = null;
+
             try {
                 // Get the Result right away to hint the scheduler to run the task inline.
-                client.SendAsync (req).Wait ();
+                result = client.SendAsync (req).Result;
             } catch (AggregateException exc) {
-                exc.Handle ((arg) => {
-                    return arg.InnerException is WebException || arg.InnerException is TaskCanceledException;
-                });
+                // Ignore network errors, but report them as responses.
+                if (!IsNetworkError (exc.InnerException, out errorMessage))
+                    throw;
             }
+
+            Response res;
+            if (result != null)
+                res = new Response () {
+                    StatusCode = result.StatusCode,
+                    Body = result.Content.ReadAsStringAsync ().Result
+                };
+            else
+                res = new Response () {
+                    ErrorMessage = "Error while sending the event: " + errorMessage,
+                };
+
+            res.Duration = DateTime.Now - start;
+            res.Metadata = ev.Metadata;
+            EnqueueResponse (res);
+        }
+
+        static bool IsNetworkError (Exception exc, out string errorMessage)
+        {
+            errorMessage = null;
+
+            // .Net and newer versions of Mono wrap a WebException
+            // with a HttpRequestException.
+            if (exc is HttpRequestException)
+                exc = exc.InnerException;
+
+            // 1. Connection refused or network error
+            if (exc is WebException) {
+                errorMessage = "Network error";
+                return true;
+            }
+
+            // 2. Time out.
+            if (exc is TaskCanceledException) {
+                errorMessage = "Operation timed out";
+                return true;
+            }
+
+            // 3. Error while processing the network stream
+            if (exc is IOException) {
+                errorMessage = "Failed to read the response data";
+                return true;
+            }
+
+            return false;
         }
     }
 }

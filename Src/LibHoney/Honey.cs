@@ -10,20 +10,29 @@ namespace LibHoney
 
         public const string DefaultApiHost = "https://api.honeycomb.io";
         public const int DefaultSampleRate = 1;
+        public const int DefaultMaxConcurrentBatches = 10;
         const bool DefaultBlock = false;
 
         readonly static FieldHolder fields = new FieldHolder ();
 
         static Transmission transmission;
+        static BlockingCollection<Response> responses;
 
-        static void ResetProperties (bool discardFields)
+        static Honey ()
+        {
+            ResetProperties (true);
+        }
+
+        static void ResetProperties (bool discardState)
         {
             WriteKey = DataSet = ApiHost = null;
             SampleRate = 0;
             BlockOnSend = BlockOnResponse = false;
 
-            if (discardFields)
+            if (discardState) {
                 fields.Clear ();
+                responses = new BlockingCollection<Response> (1);
+            }
         }
 
         public static string ApiHost {
@@ -52,6 +61,12 @@ namespace LibHoney
 
         public static bool IsInitialized {
             get { return transmission != null; }
+        }
+
+        public static BlockingCollection<Response> Responses {
+            get {
+                return responses;
+            }
         }
 
         public static int SampleRate {
@@ -99,34 +114,34 @@ namespace LibHoney
             Close (false);
         }
 
-        public static void Close (bool discardFields)
+        public static void Close (bool discardState)
         {
             if (transmission != null) {
                 transmission.Dispose ();
                 transmission = null;
             }
 
-            ResetProperties (discardFields);
+            ResetProperties (discardState);
         }
 
         public static void Init (string writeKey, string dataSet)
         {
-            Init (writeKey, dataSet, DefaultApiHost, DefaultSampleRate, DefaultBlock, DefaultBlock);
+            Init (writeKey, dataSet, DefaultApiHost, DefaultSampleRate, DefaultMaxConcurrentBatches, DefaultBlock, DefaultBlock);
         }
 
         public static void Init (string writeKey, string dataSet, string apiHost)
         {
-            Init (writeKey, dataSet, apiHost, DefaultSampleRate, DefaultBlock, DefaultBlock);
+            Init (writeKey, dataSet, apiHost, DefaultSampleRate, DefaultMaxConcurrentBatches, DefaultBlock, DefaultBlock);
         }
 
-        public static void Init (string writeKey, string dataSet, string apiHost, int sampleRate)
+        public static void Init (string writeKey, string dataSet, string apiHost, int sampleRate, int maxConcurrentBatches)
         {
-            Init (writeKey, dataSet, apiHost, sampleRate, DefaultBlock, DefaultBlock);
+            Init (writeKey, dataSet, apiHost, sampleRate, maxConcurrentBatches, DefaultBlock, DefaultBlock);
         }
 
         // XXX (calberto) expose the responses as a list, either as simple containers or Tasks
         public static void Init (string writeKey, string dataSet, string apiHost,
-            int sampleRate, bool blockOnSend, bool blockOnResponse)
+            int sampleRate, int maxConcurrentBatches, bool blockOnSend, bool blockOnResponse)
         {
             if (writeKey == null)
                 throw new ArgumentNullException (nameof (writeKey));
@@ -137,6 +152,8 @@ namespace LibHoney
 
             if (sampleRate < 1)
                 throw new ArgumentOutOfRangeException (nameof (sampleRate));
+            if (maxConcurrentBatches < 1)
+                throw new ArgumentOutOfRangeException (nameof (maxConcurrentBatches));
 
             Uri apiHostUri;
             if (!Uri.TryCreate (apiHost, UriKind.Absolute, out apiHostUri) || !IsSchemeSupported (apiHostUri.Scheme))
@@ -146,7 +163,8 @@ namespace LibHoney
             if (transmission != null)
                 throw new InvalidOperationException ("Honey is initialized already. Close it to initialize again.");
 
-            transmission = new Transmission (BlockOnSend, BlockOnResponse);
+            transmission = new Transmission (maxConcurrentBatches, blockOnSend, blockOnResponse);
+            responses = transmission.Responses;
 
             WriteKey = writeKey;
             DataSet = dataSet;

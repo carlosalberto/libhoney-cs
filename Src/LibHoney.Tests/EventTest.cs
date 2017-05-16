@@ -28,7 +28,7 @@ namespace LibHoney.Tests
         public void CtorNull ()
         {
             bool excThrown = false;
-            try { new Event (null); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Event ((IEnumerable<KeyValuePair<string, object>>)null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
@@ -47,7 +47,7 @@ namespace LibHoney.Tests
         [Fact]
         public void Ctor ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5);
+            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5, 10);
 
             var ev = new Event ();
             Assert.Equal ("key1", ev.WriteKey);
@@ -56,7 +56,7 @@ namespace LibHoney.Tests
             Assert.Equal (5, ev.SampleRate);
 
             Honey.Close ();
-            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15);
+            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15, 25);
 
             Assert.Equal ("key1", ev.WriteKey);
             Assert.Equal ("HelloHoney", ev.DataSet);

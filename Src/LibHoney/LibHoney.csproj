@@ -41,6 +41,7 @@
     <Compile Include="Event.cs" />
     <Compile Include="SendException.cs" />
     <Compile Include="Transmission.cs" />
+    <Compile Include="Response.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
