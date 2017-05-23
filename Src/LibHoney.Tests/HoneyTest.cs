@@ -2,60 +2,32 @@
 using System.Collections.Generic;
 using Xunit;
 
-using LibHoney;
-
 [assembly: CollectionBehavior (CollectionBehavior.CollectionPerAssembly)]
 
 namespace LibHoney.Tests
 {
     public class HoneyTest : IDisposable
     {
+        public Honey LibHoney {
+            get;
+            set;
+        }
+
         public void Dispose ()
         {
-            Honey.Close (true);
-        }
-
-        [Fact]
-        public void Defaults ()
-        {
-            Assert.Equal (false, Honey.IsInitialized);
-            Assert.Equal (null, Honey.WriteKey);
-            Assert.Equal (null, Honey.DataSet);
-            Assert.Equal (null, Honey.ApiHost);
-            Assert.Equal (0, Honey.SampleRate);
-            Assert.Equal (false, Honey.BlockOnSend);
-            Assert.Equal (false, Honey.BlockOnResponse);
-            Assert.Equal (true, Honey.Responses != null);
-            Assert.Equal (0, Honey.Responses.Count);
-        }
-
-        [Fact]
-        public void DefaultsAfterClose ()
-        {
-            Honey.Init ("key1", "HelloHoney", "http://myhost", 3, 6, true, true);
-            Honey.Close ();
-
-            Assert.Equal (false, Honey.IsInitialized);
-            Assert.Equal (null, Honey.WriteKey);
-            Assert.Equal (null, Honey.DataSet);
-            Assert.Equal (null, Honey.ApiHost);
-            Assert.Equal (0, Honey.SampleRate);
-            Assert.Equal (false, Honey.BlockOnSend);
-            Assert.Equal (false, Honey.BlockOnResponse);
-            Assert.Equal (true, Honey.Responses != null);
-            Assert.Equal (1, Honey.Responses.Count); // prev transmission, null signaling termination
-            Assert.Equal (null, Honey.Responses.Take ());
+            if (LibHoney != null)
+                LibHoney.Dispose ();
         }
 
         [Fact]
         public void InitNull ()
         {
             bool excThrown = false;
-            try { Honey.Init (null, "abc"); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Honey (null, "abc"); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", null); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Honey ("abc", null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
@@ -63,15 +35,15 @@ namespace LibHoney.Tests
         public void InitNull2 ()
         {
             bool excThrown = false;
-            try { Honey.Init (null, "abc", "def"); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Honey (null, "abc", "def"); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", null, "def"); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Honey ("abc", null, "def"); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", "def", null); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Honey ("abc", "def", null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
@@ -79,15 +51,15 @@ namespace LibHoney.Tests
         public void InitNull3 ()
         {
             bool excThrown = false;
-            try { Honey.Init (null, "abc", "def", 1, 1); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Honey (null, "abc", "def", 1, 1); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", null, "def", 1, 1); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Honey ("abc", null, "def", 1, 1); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", "def", null, 1, 1); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Honey ("abc", "def", null, 1, 1); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
@@ -96,20 +68,20 @@ namespace LibHoney.Tests
         {
             // sampleRate
             bool excThrown = false;
-            try { Honey.Init ("abc", "def", "ghi", 0, 1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+            try { new Honey ("abc", "def", "ghi", 0, 1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", "def", "ghi", -1, 1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+            try { new Honey ("abc", "def", "ghi", -1, 1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
             Assert.True (excThrown);
 
             // maxConcurrentBatches
             excThrown = false;
-            try { Honey.Init ("abc", "def", "ghi", 1, 0); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+            try { new Honey ("abc", "def", "ghi", 1, 0); } catch (ArgumentOutOfRangeException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.Init ("abc", "def", "ghi", 1, -1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+            try { new Honey ("abc", "def", "ghi", 1, -1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
@@ -118,216 +90,194 @@ namespace LibHoney.Tests
         {
             // Bad scheme
             bool excThrown = false;
-            try { Honey.Init ("abc", "def", "ftp://myhost"); } catch (ArgumentException) { excThrown = true; }
+            try { new Honey ("abc", "def", "ftp://myhost"); } catch (ArgumentException) { excThrown = true; }
             Assert.True (excThrown);
 
             // Incomplete
             excThrown = false;
-            try { Honey.Init ("abc", "def", "http://"); } catch (ArgumentException) { excThrown = true; }
+            try { new Honey ("abc", "def", "http://"); } catch (ArgumentException) { excThrown = true; }
             Assert.True (excThrown);
 
             // Incomplete
             excThrown = false;
-            try { Honey.Init ("abc", "def", "127.0.0.1"); } catch (ArgumentException) { excThrown = true; }
+            try { new Honey ("abc", "def", "127.0.0.1"); } catch (ArgumentException) { excThrown = true; }
             Assert.True (excThrown);
 
             // Incorrect
             excThrown = false;
-            try { Honey.Init ("abc", "def", "http://127.0.0.1:::"); } catch (ArgumentException) { excThrown = true; }
+            try { new Honey ("abc", "def", "http://127.0.0.1:::"); } catch (ArgumentException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
         [Fact]
-        public void InitWithoutClosing ()
+        public void Ctor ()
         {
-            bool excThrown = false;
-            Honey.Init ("abc", "def");
-            try { Honey.Init ("def", "abc"); } catch (InvalidOperationException) { excThrown = true; }
-            Assert.True (excThrown);
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney");
+
+            Assert.Equal ("key1", libHoney.WriteKey);
+            Assert.Equal ("HelloHoney", libHoney.DataSet);
+            Assert.Equal (Honey.DefaultApiHost, libHoney.ApiHost);
+            Assert.Equal (Honey.DefaultSampleRate, libHoney.SampleRate);
+            Assert.Equal (false, libHoney.BlockOnSend);
+            Assert.Equal (false, libHoney.BlockOnResponse);
         }
 
         [Fact]
-        public void Init ()
+        public void Ctor2 ()
         {
-            Honey.Init ("key1", "HelloHoney");
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney", "http://myhost");
 
-            Assert.Equal (true, Honey.IsInitialized);
-            Assert.Equal ("key1", Honey.WriteKey);
-            Assert.Equal ("HelloHoney", Honey.DataSet);
-            Assert.Equal (Honey.DefaultApiHost, Honey.ApiHost);
-            Assert.Equal (Honey.DefaultSampleRate, Honey.SampleRate);
-            Assert.Equal (false, Honey.BlockOnSend);
-            Assert.Equal (false, Honey.BlockOnResponse);
+            Assert.Equal ("key1", libHoney.WriteKey);
+            Assert.Equal ("HelloHoney", libHoney.DataSet);
+            Assert.Equal ("http://myhost", libHoney.ApiHost);
+            Assert.Equal (Honey.DefaultSampleRate, libHoney.SampleRate);
+            Assert.Equal (false, libHoney.BlockOnSend);
+            Assert.Equal (false, libHoney.BlockOnResponse);
         }
 
         [Fact]
-        public void Init2 ()
+        public void Ctor3 ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://myhost");
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney", "http://myhost", 3, 6);
 
-            Assert.Equal (true, Honey.IsInitialized);
-            Assert.Equal ("key1", Honey.WriteKey);
-            Assert.Equal ("HelloHoney", Honey.DataSet);
-            Assert.Equal ("http://myhost", Honey.ApiHost);
-            Assert.Equal (Honey.DefaultSampleRate, Honey.SampleRate);
-            Assert.Equal (false, Honey.BlockOnSend);
-            Assert.Equal (false, Honey.BlockOnResponse);
+            Assert.Equal ("key1", libHoney.WriteKey);
+            Assert.Equal ("HelloHoney", libHoney.DataSet);
+            Assert.Equal ("http://myhost", libHoney.ApiHost);
+            Assert.Equal (3, libHoney.SampleRate);
+            Assert.Equal (false, libHoney.BlockOnSend);
+            Assert.Equal (false, libHoney.BlockOnResponse);
         }
 
         [Fact]
-        public void Init3 ()
+        public void Ctor4 ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://myhost", 3, 6);
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney", "http://myhost", 3, 6, true, true);
 
-            Assert.Equal (true, Honey.IsInitialized);
-            Assert.Equal ("key1", Honey.WriteKey);
-            Assert.Equal ("HelloHoney", Honey.DataSet);
-            Assert.Equal ("http://myhost", Honey.ApiHost);
-            Assert.Equal (3, Honey.SampleRate);
-            Assert.Equal (false, Honey.BlockOnSend);
-            Assert.Equal (false, Honey.BlockOnResponse);
-        }
-
-        [Fact]
-        public void Init4 ()
-        {
-            Honey.Init ("key1", "HelloHoney", "http://myhost", 3, 6, true, true);
-
-            Assert.Equal (true, Honey.IsInitialized);
-            Assert.Equal ("key1", Honey.WriteKey);
-            Assert.Equal ("HelloHoney", Honey.DataSet);
-            Assert.Equal ("http://myhost", Honey.ApiHost);
-            Assert.Equal (3, Honey.SampleRate);
-            Assert.Equal (true, Honey.BlockOnSend);
-            Assert.Equal (true, Honey.BlockOnResponse);
+            Assert.Equal ("key1", libHoney.WriteKey);
+            Assert.Equal ("HelloHoney", libHoney.DataSet);
+            Assert.Equal ("http://myhost", libHoney.ApiHost);
+            Assert.Equal (3, libHoney.SampleRate);
+            Assert.Equal (true, libHoney.BlockOnSend);
+            Assert.Equal (true, libHoney.BlockOnResponse);
         }
 
         [Fact]
         public void AddNull ()
         {
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney");
+
             bool excThrown = false;
-            try { Honey.Add (null); } catch (ArgumentNullException) { excThrown = true; }
+            try { libHoney.Add (null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
         [Fact]
         public void AddFieldNull ()
         {
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney");
+
             bool excThrown = false;
-            try { Honey.AddField (null, "abc"); } catch (ArgumentNullException) { excThrown = true; }
+            try { libHoney.AddField (null, "abc"); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.AddField ("abc", null); } catch (ArgumentNullException) { excThrown = true; }
+            try { libHoney.AddField ("abc", null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.False (excThrown);
         }
 
         [Fact]
         public void AddDynamicFieldNull ()
         {
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney");
+
             bool excThrown = false;
-            try { Honey.AddDynamicField (null, () => "abc"); } catch (ArgumentNullException) { excThrown = true; }
+            try { libHoney.AddDynamicField (null, () => "abc"); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
 
             excThrown = false;
-            try { Honey.AddDynamicField ("abc", null); } catch (ArgumentNullException) { excThrown = true; }
+            try { libHoney.AddDynamicField ("abc", null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
         [Fact]
-        public void CloseMultiple ()
+        public void AfterDispose ()
         {
-            // Without initialization.
-            Honey.Close ();
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney", "http://myhost", 3, 6, true, true);
+            libHoney.Dispose ();
 
-            Honey.Init ("key1", "HelloHoney");
-            Honey.Close ();
+            Assert.Equal (true, libHoney.Responses != null);
+            Assert.Equal (1, libHoney.Responses.Count); // prev transmission, null signaling termination
+            Assert.Equal (null, libHoney.Responses.Take ());
+        }
+
+        [Fact]
+        public void DisposeMultiple ()
+        {
+            var libHoney = new Honey ("key1", "HelloHoney");
+            libHoney.Dispose ();
 
             // Again, a few times.
-            Honey.Close ();
-            Honey.Close (true);
-            Honey.Close (false);
+            libHoney.Dispose ();
+            libHoney.Dispose ();
         }
 
         [Fact]
         public void SendNowNull ()
         {
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney");
+
             bool excThrown = false;
-            try { Honey.SendNow (null); } catch (ArgumentNullException) { excThrown = true; }
+            try { libHoney.SendNow (null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
         [Fact]
-        public void SendNowUninitalized ()
+        public void SendNowDisposed ()
         {
+            var libHoney = new Honey ("key1", "HelloHoney");
+            libHoney.Dispose ();
+
             bool excThrown = false;
-            try { Honey.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
+            try { libHoney.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
         [Fact]
         public void SendEmpty ()
         {
-            Honey.Init ("key1", "HelloHoney");
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney");
             
             bool excThrown = false;
-            try { Honey.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
+            try { libHoney.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
             Assert.True (excThrown);
-        }
-
-        [Fact]
-        public void InternalStateDefault ()
-        {
-            Assert.Equal (true, Honey.Fields.IsEmpty);
-            Assert.Equal (0, Honey.Fields.Fields.Count);
-            Assert.Equal (0, Honey.Fields.DynamicFields.Count);
-            Assert.Equal (true, Honey.Transmission == null);
-            Assert.Equal (true, Honey.Responses != null);
-            Assert.Equal (Honey.Responses.BoundedCapacity, 1);
         }
 
         [Fact]
         public void InternalStateAfterInit ()
         {
-            Honey.Init ("key1", "HelloHoney");
-            Honey.AddField ("counter", 13);
-            Honey.AddField ("value", DateTime.Now);
-            Honey.AddDynamicField ("dynamic_value", () => DateTime.Now);
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney");
+            libHoney.AddField ("counter", 13);
+            libHoney.AddField ("value", DateTime.Now);
+            libHoney.AddDynamicField ("dynamic_value", () => DateTime.Now);
 
-            Assert.Equal (false, Honey.Fields.IsEmpty);
-            Assert.Equal (2, Honey.Fields.Fields.Count);
-            Assert.Equal (1, Honey.Fields.DynamicFields.Count);
-            Assert.Equal (true, Honey.Transmission != null);
-            Assert.Equal (true, Honey.Responses != null);
-            Assert.Equal (Honey.Transmission.Responses, Honey.Responses);
-            Assert.Equal (true, Honey.Responses.BoundedCapacity > 1);
+            Assert.Equal (false, libHoney.Fields.IsEmpty);
+            Assert.Equal (2, libHoney.Fields.Fields.Count);
+            Assert.Equal (1, libHoney.Fields.DynamicFields.Count);
+            Assert.Equal (true, libHoney.Transmission != null);
+            Assert.Equal (true, libHoney.Responses != null);
+            Assert.Equal (libHoney.Transmission.Responses, libHoney.Responses);
+            Assert.Equal (true, libHoney.Responses.BoundedCapacity > 1);
         }
 
         [Fact]
-        public void InternalStateAfterClose ()
+        public void InternalStateAfterDispose ()
         {
-            Honey.Init ("key1", "HelloHoney");
-            Honey.AddField ("counter", 13);
-            Honey.AddField ("value", DateTime.Now);
-            Honey.AddDynamicField ("dynamic_value", () => DateTime.Now);
+            var libHoney = LibHoney = new Honey ("key1", "HelloHoney");
+            libHoney.Dispose ();
 
-            // Close, but keep the global fields/responses
-            Honey.Close ();
-            Assert.Equal (false, Honey.Fields.IsEmpty);
-            Assert.Equal (2, Honey.Fields.Fields.Count);
-            Assert.Equal (1, Honey.Fields.DynamicFields.Count);
-            Assert.Equal (true, Honey.Transmission == null);
-            Assert.Equal (true, Honey.Responses != null);
-            Assert.Equal (true, Honey.Responses.BoundedCapacity > 1); // prev transmission
-
-            // Close, discarding the global fields/responses, if any
-            Honey.Close (true);
-            Assert.Equal (true, Honey.Fields.IsEmpty);
-            Assert.Equal (0, Honey.Fields.Fields.Count);
-            Assert.Equal (0, Honey.Fields.DynamicFields.Count);
-            Assert.Equal (true, Honey.Transmission == null);
-            Assert.Equal (true, Honey.Responses != null);
-            Assert.Equal (true, Honey.Responses.BoundedCapacity == 1); // default
+            Assert.Equal (true, libHoney.IsDisposed);
+            Assert.Null (libHoney.Transmission);
+            Assert.NotNull (libHoney.Responses);
         }
     }
 }

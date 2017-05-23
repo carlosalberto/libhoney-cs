@@ -6,42 +6,50 @@ namespace LibHoney
 {
     public class Event
     {
+        Honey libHoney;
         FieldHolder fields = new FieldHolder ();
 
         static readonly Random rand = new Random ();
 
-        public Event ()
-            : this (Enumerable.Empty<KeyValuePair<string, object>> (), Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
+        public Event (Honey libHoney)
+            : this (libHoney,
+                    Enumerable.Empty<KeyValuePair<string, object>> (), Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
-        public Event (IEnumerable<KeyValuePair<string, object>> data)
-            : this (data, Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
+        public Event (Honey libHoney, IEnumerable<KeyValuePair<string, object>> data)
+            : this (libHoney,
+                    data, Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
-        public Event (IEnumerable<KeyValuePair<string, object>> data, IEnumerable<KeyValuePair<string, Func<object>>> dynFields)
+        public Event (Honey libHoney,
+                      IEnumerable<KeyValuePair<string, object>> data, IEnumerable<KeyValuePair<string, Func<object>>> dynFields)
         {
+            if (libHoney == null)
+                throw new ArgumentNullException (nameof (libHoney));
             if (data == null)
                 throw new ArgumentNullException (nameof (data));
             if (dynFields == null)
                 throw new ArgumentNullException (nameof (dynFields));
 
-            fields.Add (Honey.Fields); // Bring the global fields
+            this.libHoney = libHoney;
+
+            fields.Add (libHoney.Fields);
             fields.Add (data);
             fields.AddDynamic (dynFields);
             fields.EvaluateDynamicFields (); // Evalute all the dynamic fields
 
             // Stash these values away for Send()
             CreatedAt = DateTime.Now;
-            WriteKey = Honey.WriteKey;
-            DataSet = Honey.DataSet;
-            ApiHost = Honey.ApiHost;
-            SampleRate = Honey.SampleRate;
+            WriteKey = libHoney.WriteKey;
+            DataSet = libHoney.DataSet;
+            ApiHost = libHoney.ApiHost;
+            SampleRate = libHoney.SampleRate;
         }
 
-        internal Event (FieldHolder fh, string writeKey, string dataSet, int sampleRate)
-            : this (fh.Fields, fh.DynamicFields)
+        internal Event (Honey libHoney, FieldHolder fh, string writeKey, string dataSet, int sampleRate)
+            : this (libHoney, fh.Fields, fh.DynamicFields)
         {
             WriteKey = writeKey;
             DataSet = dataSet;
@@ -50,13 +58,20 @@ namespace LibHoney
 
         internal Event (Event ev)
         {
+            libHoney = ev.libHoney;
             fields.Add (ev.Fields);
+
             CreatedAt = ev.CreatedAt;
             WriteKey = ev.WriteKey;
             DataSet = ev.DataSet;
             ApiHost = ev.ApiHost;
             SampleRate = ev.SampleRate;
             Metadata = ev.Metadata;
+        }
+
+        // Transmission testing purposes.
+        internal Event ()
+        {
         }
 
         public string ApiHost {
@@ -121,8 +136,8 @@ namespace LibHoney
 
         public void Send ()
         {
-            if (!Honey.IsInitialized)
-                throw new SendException ("Tried to send on a closed or uninitialized libhoney");
+            if (libHoney.IsDisposed)
+                throw new SendException ("Tried to send on a closed libhoney");
 
             if (ShouldDrop (SampleRate)) {
                 SendDroppedResponse ();
@@ -134,12 +149,12 @@ namespace LibHoney
 
         public void SendPreSampled ()
         {
-            if (!Honey.IsInitialized)
-                throw new SendException ("Tried to send on a closed or uninitialized libhoney");
+            if (libHoney.IsDisposed)
+                throw new SendException ("Tried to send on a closed libhoney");
             if (fields.IsEmpty)
                 throw new SendException ("No metrics added to event. Will not send empty event");
 
-            Honey.Transmission.Send (this);
+            libHoney.Transmission.Send (this);
         }
 
         void SendDroppedResponse ()

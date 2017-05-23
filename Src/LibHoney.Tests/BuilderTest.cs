@@ -2,24 +2,25 @@
 using System.Collections.Generic;
 using Xunit;
 
-using LibHoney;
-
 namespace LibHoney.Tests
 {
-    public class BuilderTest : IDisposable
+    public class BuilderTest : IClassFixture<LibHoneyFixture>, IDisposable
     {
-        public void Dispose ()
+        LibHoneyFixture fixture;
+
+        public BuilderTest (LibHoneyFixture fixture)
         {
-            Honey.Close (true);
+            this.fixture = fixture;
         }
 
-        [Fact]
-        public void Defaults ()
+        public void Dispose ()
         {
-            var b = new Builder ();
-            Assert.Equal (null, b.WriteKey);
-            Assert.Equal (null, b.DataSet);
-            Assert.Equal (0, b.SampleRate);
+            fixture.LibHoney.Reset ();
+        }
+
+        Honey GetLibHoney ()
+        {
+            return fixture.LibHoney;
         }
 
         [Fact]
@@ -33,38 +34,50 @@ namespace LibHoney.Tests
         [Fact]
         public void CtorNull2 ()
         {
+            var honey = GetLibHoney ();
+
             bool excThrown = false;
-            try { new Builder (new Dictionary<string, object> (), null); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Builder (honey, null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.Equal (true, excThrown);
 
             excThrown = false;
-            try { new Builder (null, new Dictionary<string, Func<object>> ()); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Builder (null, new Dictionary<string, object> ()); } catch (ArgumentNullException) { excThrown = true; }
+            Assert.Equal (true, excThrown);
+        }
+
+        [Fact]
+        public void CtorNull3 ()
+        {
+            var honey = GetLibHoney ();
+
+            bool excThrown = false;
+            try { new Builder (honey, new Dictionary<string, object> (), null); } catch (ArgumentNullException) { excThrown = true; }
+            Assert.Equal (true, excThrown);
+
+            excThrown = false;
+            try { new Builder (honey, null, new Dictionary<string, Func<object>> ()); } catch (ArgumentNullException) { excThrown = true; }
+            Assert.Equal (true, excThrown);
+
+            excThrown = false;
+            try { new Builder (null, new Dictionary<string, object> (), new Dictionary<string, Func<object>> ()); } catch (ArgumentNullException) { excThrown = true; }
             Assert.Equal (true, excThrown);
         }
 
         [Fact]
         public void Ctor ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5, 10);
-
-            var b = new Builder ();
-            Assert.Equal ("key1", b.WriteKey);
-            Assert.Equal ("HelloHoney", b.DataSet);
-            Assert.Equal (5, b.SampleRate);
-
-            Honey.Close ();
-            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15, 25);
-
-            Assert.Equal ("key1", b.WriteKey);
-            Assert.Equal ("HelloHoney", b.DataSet);
-            Assert.Equal (5, b.SampleRate);
+            var honey = GetLibHoney ();
+            var b = new Builder (honey);
+            Assert.Equal (honey.WriteKey, b.WriteKey);
+            Assert.Equal (honey.DataSet, b.DataSet);
+            Assert.Equal (honey.SampleRate, b.SampleRate);
         }
 
         [Fact]
         public void AddNull ()
         {
             bool excThrown = false;
-            var b = new Builder ();
+            var b = new Builder (GetLibHoney ());
             try { b.Add (null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.Equal (true, excThrown);
         }
@@ -73,7 +86,7 @@ namespace LibHoney.Tests
         public void AddFieldNull ()
         {
             bool excThrown = false;
-            var b = new Builder ();
+            var b = new Builder (GetLibHoney ());
             try { b.AddField (null, "abc"); } catch (ArgumentNullException) { excThrown = true; }
             Assert.Equal (true, excThrown);
 
@@ -86,7 +99,7 @@ namespace LibHoney.Tests
         public void AddDynamicFieldNull ()
         {
             bool excThrown = false;
-            var b = new Builder ();
+            var b = new Builder (GetLibHoney ());
             try { b.AddDynamicField (null, () => "abc"); } catch (ArgumentNullException) { excThrown = true; }
             Assert.Equal (true, excThrown);
 
@@ -98,51 +111,38 @@ namespace LibHoney.Tests
         [Fact]
         public void Clone ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://127.0.0.1", 5, 15);
+            var honey = GetLibHoney ();
 
-            var b = new Builder ();
-            Assert.Equal ("key1", b.WriteKey);
-            Assert.Equal ("HelloHoney", b.DataSet);
-            Assert.Equal (5, b.SampleRate);
-
-            Honey.Close ();
-            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15, 25);
+            var b = new Builder (honey);
+            Assert.Equal (honey.WriteKey, b.WriteKey);
+            Assert.Equal (honey.DataSet, b.DataSet);
+            Assert.Equal (honey.SampleRate, b.SampleRate);
 
             var clone = b.Clone ();
             Assert.Equal (true, clone != null);
-            Assert.Equal ("key1", clone.WriteKey);
-            Assert.Equal ("HelloHoney", clone.DataSet);
-            Assert.Equal (5, clone.SampleRate);
+            Assert.Equal (b.WriteKey, clone.WriteKey);
+            Assert.Equal (b.DataSet, clone.DataSet);
+            Assert.Equal (b.SampleRate, clone.SampleRate);
         }
 
         [Fact]
         public void NewEvent ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://localhost", 5, 15);
+            var honey = GetLibHoney ();
 
-            var b = new Builder ();
+            var b = new Builder (honey);
             var ev = b.NewEvent ();
             Assert.Equal (true, ev != null);
-            Assert.Equal ("key1", ev.WriteKey);
-            Assert.Equal ("HelloHoney", ev.DataSet);
-            Assert.Equal ("http://localhost", ev.ApiHost);
-            Assert.Equal (5, ev.SampleRate);
-
-            Honey.Close ();
-            Honey.Init ("key2", "HelloComb", "http://127.0.0.1", 15, 25);
-
-            Assert.Equal ("key1", ev.WriteKey);
-            Assert.Equal ("HelloHoney", ev.DataSet);
-            Assert.Equal ("http://localhost", ev.ApiHost);
-            Assert.Equal (5, ev.SampleRate);
+            Assert.Equal (honey.WriteKey, ev.WriteKey);
+            Assert.Equal (honey.DataSet, ev.DataSet);
+            Assert.Equal (honey.ApiHost, ev.ApiHost);
+            Assert.Equal (honey.SampleRate, ev.SampleRate);
         }
 
         [Fact]
         public void NewEventJSON ()
         {
-            Honey.Init ("key1", "HelloHoney", "http://localhost", 5, 15);
-
-            var b = new Builder ();
+            var b = new Builder (GetLibHoney ());
             b.AddField ("v1", 13);
             b.AddField ("v2", new [] { 1, 7, 13 });
             b.AddDynamicField ("d1", () => 14);
@@ -156,31 +156,29 @@ namespace LibHoney.Tests
         [Fact]
         public void SendNowNull ()
         {
-            var b = new Builder ();
+            var b = new Builder (GetLibHoney ());
             bool excThrown = false;
             try { b.SendNow (null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
         [Fact]
-        public void SendNowUninitialized ()
+        public void SendNowDisposed ()
         {
-            var b = new Builder ();
+            var honey = GetLibHoney ();
+            var b = new Builder (honey);
+            b.AddField ("key1", "value1"); // Add data to have a valid event.
+            honey.Dispose ();
+
             bool excThrown = false;
             try { b.SendNow (); } catch (SendException) { excThrown = true; }
-            Assert.True (excThrown);
-
-            excThrown = false;
-            try { b.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
         [Fact]
         public void SendNowEmpty ()
         {
-            Honey.Init ("key1", "HelloHoney");
-
-            var b = new Builder ();
+            var b = new Builder (GetLibHoney ());
             bool excThrown = false;
             try { b.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
             Assert.True (excThrown);
