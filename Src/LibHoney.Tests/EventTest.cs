@@ -79,6 +79,33 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
+        public void Clone ()
+        {
+            var ev = new Event (GetLibHoney (),
+                                new Dictionary<string, object> () {
+                                    ["hello"] = "honey"
+                                },
+                                new Dictionary<string, Func<object>> () {
+                                    ["dynamic_hello"] = () => "dynamic_honey"
+                                }) {
+                Metadata = new object ()
+            };
+            var clone = ev.Clone ();
+
+            Assert.NotSame (ev, clone);
+            Assert.Equal (ev.WriteKey, clone.WriteKey);
+            Assert.Equal (ev.DataSet, clone.DataSet);
+            Assert.Equal (ev.ApiHost, clone.ApiHost);
+            Assert.Equal (ev.SampleRate, clone.SampleRate);
+            Assert.Equal (ev.Metadata, clone.Metadata);
+            Assert.Equal (ev.CreatedAt, clone.CreatedAt);
+
+            Assert.NotSame (ev.Fields, clone.Fields);
+            Assert.Equal (ev.Fields.IsEmpty, ev.Fields.IsEmpty);
+            Assert.Equal (ev.Fields.Fields.Count, ev.Fields.Fields.Count);
+        }
+
+        [Fact]
         public void AddNull ()
         {
             var ev = new Event (GetLibHoney ());
