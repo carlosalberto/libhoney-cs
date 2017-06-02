@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace LibHoney
+namespace Honeycomb
 {
     public class Response
     {

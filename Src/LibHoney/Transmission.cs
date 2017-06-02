@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LibHoney
+namespace Honeycomb
 {
     class Transmission : IDisposable
     {
@@ -24,7 +24,7 @@ namespace LibHoney
         const string HoneyTeamKey = "X-Hny-Team";
         const string HoneySamplerate = "X-Hny-Samplerate";
         const string HoneyEventTime = "X-Hny-Event-Time";
-        const string HoneyUserAgent = "libhoney-net/" + Honey.Version;
+        const string HoneyUserAgent = "libhoney-net/" + LibHoney.Version;
 
         const string HoneyEventsUrl = "/1/events/";
 

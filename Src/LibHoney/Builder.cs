@@ -2,36 +2,44 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace LibHoney
+namespace Honeycomb
 {
     public class Builder
     {
+        LibHoney libHoney;
         FieldHolder fields = new FieldHolder ();
 
-        public Builder ()
-            : this (Enumerable.Empty<KeyValuePair<string, object>> (), Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
+        public Builder (LibHoney libHoney)
+            : this (libHoney,
+                    Enumerable.Empty<KeyValuePair<string, object>> (), Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
-        public Builder (IEnumerable<KeyValuePair<string, object>> data)
-            : this (data, Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
+        public Builder (LibHoney libHoney, IEnumerable<KeyValuePair<string, object>> data)
+            : this (libHoney, data, Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
-        public Builder (IEnumerable<KeyValuePair<string, object>> data, IEnumerable<KeyValuePair<string, Func<object>>> dynFields)
+        public Builder (LibHoney libHoney,
+                        IEnumerable<KeyValuePair<string, object>> data, IEnumerable<KeyValuePair<string, Func<object>>> dynFields)
         {
+            if (libHoney == null)
+                throw new ArgumentNullException (nameof (libHoney));
             if (data == null)
                 throw new ArgumentNullException (nameof (data));
             if (dynFields == null)
                 throw new ArgumentNullException (nameof (dynFields));
 
-            fields.Add (Honey.Fields); // Bring the global fields
+            this.libHoney = libHoney;
+
+            fields.Add (libHoney.Fields);
             fields.Add (data);
             fields.AddDynamic (dynFields);
 
-            WriteKey = Honey.WriteKey;
-            DataSet = Honey.DataSet;
-            SampleRate = Honey.SampleRate;
+            // Stash these values away for Send()
+            WriteKey = libHoney.WriteKey;
+            DataSet = libHoney.DataSet;
+            SampleRate = libHoney.SampleRate;
         }
 
         public string DataSet {
@@ -77,7 +85,7 @@ namespace LibHoney
 
         public Builder Clone ()
         {
-            var builder = new Builder ();
+            var builder = new Builder (libHoney);
             builder.fields.Add (fields);
             builder.WriteKey = WriteKey;
             builder.DataSet = DataSet;
@@ -87,7 +95,7 @@ namespace LibHoney
 
         public Event NewEvent ()
         {
-            return new Event (fields, WriteKey, DataSet, SampleRate);
+            return new Event (libHoney, fields, WriteKey, DataSet, SampleRate);
         }
 
         public void SendNow ()
