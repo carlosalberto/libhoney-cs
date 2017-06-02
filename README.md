@@ -5,10 +5,10 @@
 ## Example
 
 ```cs
-using LibHoney;
+using Honeycomb;
 
-Honey.Init ("YOUR_WRITE_KEY", "honeycomb-cs-example");
-Honey.SendNow (new Dictionary<string, object> () {
+var libHoney = new LibHoney ("YOUR_WRITE_KEY", "honeycomb-cs-example");
+libHhoney.SendNow (new Dictionary<string, object> () {
     ["message"] = "Test Honeycomb event",
     ["count"] = 7
 });
