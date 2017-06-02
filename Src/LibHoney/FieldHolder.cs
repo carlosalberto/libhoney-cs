@@ -4,7 +4,7 @@ using System.Linq;
 
 using Newtonsoft.Json;
 
-namespace LibHoney
+namespace Honeycomb
 {
     class FieldHolder
     {

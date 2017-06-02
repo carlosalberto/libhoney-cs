@@ -37,7 +37,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Builder.cs" />
     <Compile Include="FieldHolder.cs" />
-    <Compile Include="Honey.cs" />
+    <Compile Include="LibHoney.cs" />
     <Compile Include="Event.cs" />
     <Compile Include="SendException.cs" />
     <Compile Include="Transmission.cs" />

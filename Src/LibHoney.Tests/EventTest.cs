@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace LibHoney.Tests
+namespace Honeycomb.Tests
 {
     public class EventTest : IClassFixture<LibHoneyFixture>, IDisposable
     {
@@ -18,7 +18,7 @@ namespace LibHoney.Tests
             fixture.LibHoney.Reset ();
         }
 
-        Honey GetLibHoney ()
+        LibHoney GetLibHoney ()
         {
             return fixture.LibHoney;
         }
@@ -27,7 +27,7 @@ namespace LibHoney.Tests
         public void CtorNull ()
         {
             bool excThrown = false;
-            try { new Event ((Honey) null); } catch (ArgumentNullException) { excThrown = true; }
+            try { new Event ((LibHoney) null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
         }
 

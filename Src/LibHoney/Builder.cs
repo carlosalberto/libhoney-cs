@@ -2,25 +2,25 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace LibHoney
+namespace Honeycomb
 {
     public class Builder
     {
-        Honey libHoney;
+        LibHoney libHoney;
         FieldHolder fields = new FieldHolder ();
 
-        public Builder (Honey libHoney)
+        public Builder (LibHoney libHoney)
             : this (libHoney,
                     Enumerable.Empty<KeyValuePair<string, object>> (), Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
-        public Builder (Honey libHoney, IEnumerable<KeyValuePair<string, object>> data)
+        public Builder (LibHoney libHoney, IEnumerable<KeyValuePair<string, object>> data)
             : this (libHoney, data, Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
-        public Builder (Honey libHoney,
+        public Builder (LibHoney libHoney,
                         IEnumerable<KeyValuePair<string, object>> data, IEnumerable<KeyValuePair<string, Func<object>>> dynFields)
         {
             if (libHoney == null)

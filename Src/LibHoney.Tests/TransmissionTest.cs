@@ -3,7 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace LibHoney.Tests
+namespace Honeycomb.Tests
 {
     public class TransmissionFixture : IDisposable
     {

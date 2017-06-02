@@ -2,28 +2,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LibHoney
+namespace Honeycomb
 {
     public class Event
     {
-        Honey libHoney;
+        LibHoney libHoney;
         FieldHolder fields = new FieldHolder ();
 
         static readonly Random rand = new Random ();
 
-        public Event (Honey libHoney)
+        public Event (LibHoney libHoney)
             : this (libHoney,
                     Enumerable.Empty<KeyValuePair<string, object>> (), Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
-        public Event (Honey libHoney, IEnumerable<KeyValuePair<string, object>> data)
+        public Event (LibHoney libHoney, IEnumerable<KeyValuePair<string, object>> data)
             : this (libHoney,
                     data, Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
-        public Event (Honey libHoney,
+        public Event (LibHoney libHoney,
                       IEnumerable<KeyValuePair<string, object>> data, IEnumerable<KeyValuePair<string, Func<object>>> dynFields)
         {
             if (libHoney == null)
@@ -48,7 +48,7 @@ namespace LibHoney
             SampleRate = libHoney.SampleRate;
         }
 
-        internal Event (Honey libHoney, FieldHolder fh, string writeKey, string dataSet, int sampleRate)
+        internal Event (LibHoney libHoney, FieldHolder fh, string writeKey, string dataSet, int sampleRate)
             : this (libHoney, fh.Fields, fh.DynamicFields)
         {
             WriteKey = writeKey;

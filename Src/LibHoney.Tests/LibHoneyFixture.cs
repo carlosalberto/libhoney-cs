@@ -1,13 +1,13 @@
 ﻿using System;
 using Xunit;
 
-namespace LibHoney.Tests
+namespace Honeycomb.Tests
 {
     public class LibHoneyFixture
     {
         public LibHoneyFixture ()
         {
-            LibHoney = new Honey ("key1", "HelloTest");
+            LibHoney = new LibHoney ("key1", "HelloTest");
         }
 
         public void Dispose ()
@@ -15,7 +15,7 @@ namespace LibHoney.Tests
             LibHoney.Dispose ();
         }
 
-        public Honey LibHoney {
+        public LibHoney LibHoney {
             get;
             set;
         }

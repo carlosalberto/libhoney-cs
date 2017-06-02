@@ -2,9 +2,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace LibHoney
+namespace Honeycomb
 {
-    public sealed class Honey : IDisposable
+    public sealed class LibHoney : IDisposable
     {
         public const string Version = "1.0.0.0";
 
@@ -18,25 +18,25 @@ namespace LibHoney
         Transmission transmission;
         BlockingCollection<Response> responses;
 
-        public Honey (string writeKey, string dataSet)
+        public LibHoney (string writeKey, string dataSet)
             : this (writeKey, dataSet, DefaultApiHost, DefaultSampleRate, DefaultMaxConcurrentBatches,
                     DefaultBlock, DefaultBlock)
         {
         }
 
-        public Honey (string writeKey, string dataSet, string apiHost)
+        public LibHoney (string writeKey, string dataSet, string apiHost)
             : this (writeKey, dataSet, apiHost, DefaultSampleRate, DefaultMaxConcurrentBatches,
                     DefaultBlock, DefaultBlock)
         {
         }
 
-        public Honey (string writeKey, string dataSet, string apiHost, int sampleRate, int maxConcurrentBatches)
+        public LibHoney (string writeKey, string dataSet, string apiHost, int sampleRate, int maxConcurrentBatches)
             : this (writeKey, dataSet, apiHost, sampleRate, maxConcurrentBatches,
                     DefaultBlock, DefaultBlock)
         {
         }
 
-        public Honey (string writeKey, string dataSet, string apiHost, int sampleRate, int maxConcurrentBatches,
+        public LibHoney (string writeKey, string dataSet, string apiHost, int sampleRate, int maxConcurrentBatches,
                       bool blockOnSend, bool blockOnResponse)
         {
             if (writeKey == null)

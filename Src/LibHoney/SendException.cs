@@ -1,6 +1,6 @@
 using System;
 
-namespace LibHoney
+namespace Honeycomb
 {
     public class SendException : Exception
     {

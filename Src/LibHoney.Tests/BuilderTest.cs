@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace LibHoney.Tests
+namespace Honeycomb.Tests
 {
     public class BuilderTest : IClassFixture<LibHoneyFixture>, IDisposable
     {
@@ -18,7 +18,7 @@ namespace LibHoney.Tests
             fixture.LibHoney.Reset ();
         }
 
-        Honey GetLibHoney ()
+        LibHoney GetLibHoney ()
         {
             return fixture.LibHoney;
         }
