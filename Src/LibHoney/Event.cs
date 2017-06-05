@@ -159,7 +159,10 @@ namespace Honeycomb
 
         void SendDroppedResponse ()
         {
-            // XXX (calberto) Add the response object to the responses queue.
+            libHoney.Responses.Add (new Response () {
+                Metadata = Metadata,
+                ErrorMessage = "Event dropped due to sampling"
+            });
         }
 
         static bool ShouldDrop (int rate)

@@ -182,6 +182,26 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
+        public void SendDropped ()
+        {
+            var honey = GetLibHoney ();
+            var ev = new Event (honey) {
+                Metadata = new object (),
+                SampleRate = Int32.MaxValue - 1
+            };
+            ev.Send ();
+            Assert.Equal (1, honey.Responses.Count);
+
+            Response res;
+            honey.Responses.TryTake (out res);
+            Assert.Equal ("Event dropped due to sampling", res.ErrorMessage);
+            Assert.Equal (ev.Metadata, res.Metadata);
+            Assert.Equal (TimeSpan.Zero, res.Duration);
+            Assert.Equal (0, (int) res.StatusCode);
+            Assert.Null (res.Body);
+        }
+
+        [Fact]
         public void ToJSONBasic ()
         {
             var honey = GetLibHoney ();
