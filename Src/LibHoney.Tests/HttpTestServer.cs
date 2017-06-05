@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -76,7 +77,8 @@ namespace Honeycomb.Tests
                 Thread.Sleep (timeout);
 
             // Save the payload
-            var reader = new StreamReader (request.InputStream);
+            var gzipStream = new GZipStream(request.InputStream, CompressionMode.Decompress);
+            var reader = new StreamReader (gzipStream);
             payloadItems.Add (reader.ReadToEnd ());
             headers.Add (request.Headers);
 
