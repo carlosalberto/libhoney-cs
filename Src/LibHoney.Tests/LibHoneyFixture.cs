@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Honeycomb.Tests
 {
-    public class LibHoneyFixture
+    public class LibHoneyFixture : IDisposable
     {
         public LibHoneyFixture ()
         {

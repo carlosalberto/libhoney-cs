@@ -142,7 +142,8 @@ namespace Honeycomb.Tests
         [Fact]
         public void SendDisposed ()
         {
-            var honey = GetLibHoney ();
+            // Create our own LibHoney so we can dispose it right away.
+            var honey = new LibHoney ("key1", "data1");
             var ev = new Event (honey);
             honey.Dispose ();
 
@@ -163,7 +164,8 @@ namespace Honeycomb.Tests
         [Fact]
         public void SendPreSampledDisposed ()
         {
-            var honey = GetLibHoney ();
+            // Create our own LibHoney so we can dispose it right away.
+            var honey = new LibHoney ("key1", "data1");
             var ev = new Event (honey);
             honey.Dispose ();
 
@@ -185,6 +187,7 @@ namespace Honeycomb.Tests
         public void SendDropped ()
         {
             var honey = GetLibHoney ();
+            
             var ev = new Event (honey) {
                 Metadata = new object (),
                 SampleRate = Int32.MaxValue - 1
