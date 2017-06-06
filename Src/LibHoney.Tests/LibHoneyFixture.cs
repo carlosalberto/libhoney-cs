@@ -7,7 +7,7 @@ namespace Honeycomb.Tests
     {
         public LibHoneyFixture ()
         {
-            LibHoney = new LibHoney ("key1", "HelloTest");
+            LibHoney = new LibHoney ("key1", "HelloTest", 1);
         }
 
         public void Dispose ()

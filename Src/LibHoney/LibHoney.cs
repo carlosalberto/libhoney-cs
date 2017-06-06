@@ -66,6 +66,12 @@ namespace Honeycomb
             BlockOnResponse = blockOnResponse;
         }
 
+        public LibHoney (string writeKey, string dataSet, int maxConcurrentBatches)
+            : this (writeKey, dataSet, DefaultApiHost, DefaultSampleRate, maxConcurrentBatches,
+            DefaultBlock, DefaultBlock)
+        {
+        }
+
         internal void Reset ()
         {
             fields.Clear ();
