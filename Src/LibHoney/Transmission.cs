@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -160,42 +162,56 @@ namespace Honeycomb
         {
             var uri = new Uri (ev.ApiHost + HoneyEventsUrl + ev.DataSet);
 
-            var req = new HttpRequestMessage () {
-                RequestUri = uri,
-                Method = HttpMethod.Post,
-                Content = new StringContent (ev.ToJSON (), Encoding.UTF8, "application/json")
-            };
-            req.Headers.Add (HoneyTeamKey, ev.WriteKey);
-            req.Headers.Add (HoneySamplerate, ev.SampleRate.ToString ());
-            req.Headers.Add (HoneyEventTime, ev.CreatedAtISO);
+            using (MemoryStream ms = new MemoryStream()) {
+                using (GZipStream gzip = new GZipStream(ms,
+							CompressionMode.Compress, true))
+                {
+                    var evBytes = Encoding.UTF8.GetBytes(ev.ToJSON());
+                    gzip.Write(evBytes, 0, evBytes.Length);
+                }
 
-            HttpResponseMessage result = null;
-            DateTime start = DateTime.Now;
-            string errorMessage = null;
+                ms.Position = 0;
 
-            try {
-                // Get the Result right away to hint the scheduler to run the task inline.
-                result = client.SendAsync (req).Result;
-            } catch (AggregateException exc) {
-                // Ignore network errors, but report them as responses.
-                if (!IsNetworkError (exc.InnerException, out errorMessage))
-                    throw;
+                var req = new HttpRequestMessage () {
+                    RequestUri = uri,
+                    Method = HttpMethod.Post,
+                    Content = new StreamContent(ms)
+                };
+                req.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                req.Content.Headers.ContentEncoding.Add ("gzip");
+                req.Headers.Add (HoneyTeamKey, ev.WriteKey);
+                req.Headers.Add (HoneySamplerate, ev.SampleRate.ToString ());
+                req.Headers.Add (HoneyEventTime, ev.CreatedAtISO);
+
+                HttpResponseMessage result = null;
+                DateTime start = DateTime.Now;
+                string errorMessage = null;
+
+                try {
+                    // Get the Result right away to hint the scheduler to run the task inline.
+                    result = client.SendAsync (req).Result;
+                } catch (AggregateException exc) {
+                    // Ignore network errors, but report them as responses.
+                    if (!IsNetworkError (exc.InnerException, out errorMessage))
+                        throw;
+                }
+
+                Response res;
+                if (result != null) {
+                    res = new Response () {
+                        StatusCode = result.StatusCode,
+                        Body = result.Content.ReadAsStringAsync ().Result
+                    };
+                } else {
+                    res = new Response () {
+                        ErrorMessage = "Error while sending the event: " + errorMessage,
+                    };
+                }
+
+                res.Duration = DateTime.Now - start;
+                res.Metadata = ev.Metadata;
+                EnqueueResponse (res);
             }
-
-            Response res;
-            if (result != null)
-                res = new Response () {
-                    StatusCode = result.StatusCode,
-                    Body = result.Content.ReadAsStringAsync ().Result
-                };
-            else
-                res = new Response () {
-                    ErrorMessage = "Error while sending the event: " + errorMessage,
-                };
-
-            res.Duration = DateTime.Now - start;
-            res.Metadata = ev.Metadata;
-            EnqueueResponse (res);
         }
 
         static bool IsNetworkError (Exception exc, out string errorMessage)
