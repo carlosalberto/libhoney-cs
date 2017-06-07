@@ -164,7 +164,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void AddNull ()
         {
-            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney");
+            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
 
             bool excThrown = false;
             try { libHoney.Add (null); } catch (ArgumentNullException) { excThrown = true; }
@@ -174,7 +174,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void AddFieldNull ()
         {
-            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney");
+            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
 
             bool excThrown = false;
             try { libHoney.AddField (null, "abc"); } catch (ArgumentNullException) { excThrown = true; }
@@ -188,7 +188,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void AddDynamicFieldNull ()
         {
-            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney");
+            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
 
             bool excThrown = false;
             try { libHoney.AddDynamicField (null, () => "abc"); } catch (ArgumentNullException) { excThrown = true; }
@@ -213,7 +213,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void DisposeMultiple ()
         {
-            var libHoney = new LibHoney ("key1", "HelloHoney");
+            var libHoney = new LibHoney ("key1", "HelloHoney", 1);
             libHoney.Dispose ();
 
             // Again, a few times.
@@ -224,7 +224,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void SendNowNull ()
         {
-            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney");
+            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
 
             bool excThrown = false;
             try { libHoney.SendNow (null); } catch (ArgumentNullException) { excThrown = true; }
@@ -234,7 +234,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void SendNowDisposed ()
         {
-            var libHoney = new LibHoney ("key1", "HelloHoney");
+            var libHoney = new LibHoney ("key1", "HelloHoney", 1);
             libHoney.Dispose ();
 
             bool excThrown = false;
@@ -245,7 +245,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void SendEmpty ()
         {
-            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney");
+            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
             
             bool excThrown = false;
             try { libHoney.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
@@ -255,7 +255,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void InternalStateAfterInit ()
         {
-            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney");
+            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
             libHoney.AddField ("counter", 13);
             libHoney.AddField ("value", DateTime.Now);
             libHoney.AddDynamicField ("dynamic_value", () => DateTime.Now);
@@ -272,7 +272,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void InternalStateAfterDispose ()
         {
-            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney");
+            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
             libHoney.Dispose ();
 
             Assert.Equal (true, libHoney.IsDisposed);

@@ -79,6 +79,33 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
+        public void Clone ()
+        {
+            var ev = new Event (GetLibHoney (),
+                                new Dictionary<string, object> () {
+                                    ["hello"] = "honey"
+                                },
+                                new Dictionary<string, Func<object>> () {
+                                    ["dynamic_hello"] = () => "dynamic_honey"
+                                }) {
+                Metadata = new object ()
+            };
+            var clone = ev.Clone ();
+
+            Assert.NotSame (ev, clone);
+            Assert.Equal (ev.WriteKey, clone.WriteKey);
+            Assert.Equal (ev.DataSet, clone.DataSet);
+            Assert.Equal (ev.ApiHost, clone.ApiHost);
+            Assert.Equal (ev.SampleRate, clone.SampleRate);
+            Assert.Equal (ev.Metadata, clone.Metadata);
+            Assert.Equal (ev.CreatedAt, clone.CreatedAt);
+
+            Assert.NotSame (ev.Fields, clone.Fields);
+            Assert.Equal (ev.Fields.IsEmpty, ev.Fields.IsEmpty);
+            Assert.Equal (ev.Fields.Fields.Count, ev.Fields.Fields.Count);
+        }
+
+        [Fact]
         public void AddNull ()
         {
             var ev = new Event (GetLibHoney ());
@@ -115,7 +142,8 @@ namespace Honeycomb.Tests
         [Fact]
         public void SendDisposed ()
         {
-            var honey = GetLibHoney ();
+            // Create our own LibHoney so we can dispose it right away.
+            var honey = new LibHoney ("key1", "data1");
             var ev = new Event (honey);
             honey.Dispose ();
 
@@ -136,7 +164,8 @@ namespace Honeycomb.Tests
         [Fact]
         public void SendPreSampledDisposed ()
         {
-            var honey = GetLibHoney ();
+            // Create our own LibHoney so we can dispose it right away.
+            var honey = new LibHoney ("key1", "data1");
             var ev = new Event (honey);
             honey.Dispose ();
 
@@ -152,6 +181,27 @@ namespace Honeycomb.Tests
             var ev = new Event (GetLibHoney ());
             try { ev.SendPreSampled (); } catch (SendException) { excThrown = true; }
             Assert.True (excThrown);
+        }
+
+        [Fact]
+        public void SendDropped ()
+        {
+            var honey = GetLibHoney ();
+            
+            var ev = new Event (honey) {
+                Metadata = new object (),
+                SampleRate = Int32.MaxValue - 1
+            };
+            ev.Send ();
+            Assert.Equal (1, honey.Responses.Count);
+
+            Response res;
+            honey.Responses.TryTake (out res);
+            Assert.Equal ("Event dropped due to sampling", res.ErrorMessage);
+            Assert.Equal (ev.Metadata, res.Metadata);
+            Assert.Equal (TimeSpan.Zero, res.Duration);
+            Assert.Equal (0, (int) res.StatusCode);
+            Assert.Null (res.Body);
         }
 
         [Fact]

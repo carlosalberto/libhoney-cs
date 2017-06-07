@@ -3,8 +3,12 @@ using System.Net;
 
 namespace Honeycomb
 {
-    public class Response
+    public sealed class Response
     {
+        internal Response ()
+        {
+        }
+
         public HttpStatusCode StatusCode {
             get;
             internal set;
