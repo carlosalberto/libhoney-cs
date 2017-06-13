@@ -159,7 +159,7 @@ namespace Honeycomb
 
         void SendDroppedResponse ()
         {
-            libHoney.Responses.Add (new Response () {
+            libHoney.Transmission.EnqueueResponse (new Response () {
                 Metadata = Metadata,
                 ErrorMessage = "Event dropped due to sampling"
             });

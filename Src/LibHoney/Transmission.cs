@@ -131,6 +131,14 @@ namespace Honeycomb
             client.Dispose ();
         }
 
+        public void EnqueueResponse (Response res)
+        {
+            if (BlockOnResponse)
+                responses.Add (res);
+            else
+                responses.TryAdd (res);
+        }
+
         public void Send (Event ev)
         {
             ev = ev.Clone (); // Prevent further changes
@@ -148,14 +156,6 @@ namespace Honeycomb
                 };
                 EnqueueResponse (res);
             }
-        }
-
-        void EnqueueResponse (Response res)
-        {
-            if (BlockOnResponse)
-                responses.Add (res);
-            else
-                responses.TryAdd (res);
         }
 
         void DoSend (Event ev)
