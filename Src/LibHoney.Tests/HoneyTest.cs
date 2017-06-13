@@ -266,7 +266,8 @@ namespace Honeycomb.Tests
             Assert.Equal (true, libHoney.Transmission != null);
             Assert.Equal (true, libHoney.Responses != null);
             Assert.Equal (libHoney.Transmission.Responses, libHoney.Responses);
-            Assert.Equal (true, libHoney.Responses.BoundedCapacity > 1);
+
+            Assert.Equal (true, libHoney.Transmission.Responses.BoundedCapacity > 1);
         }
 
         [Fact]

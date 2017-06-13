@@ -52,6 +52,7 @@
     <Compile Include="TransmissionTest.cs" />
     <Compile Include="HttpTestServer.cs" />
     <Compile Include="LibHoneyFixture.cs" />
+    <Compile Include="ResponseCollectionTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

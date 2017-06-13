@@ -16,7 +16,7 @@ namespace Honeycomb
         readonly FieldHolder fields = new FieldHolder ();
 
         Transmission transmission;
-        BlockingCollection<Response> responses;
+        ResponseCollection responses;
 
         public LibHoney (string writeKey, string dataSet)
             : this (writeKey, dataSet, DefaultApiHost, DefaultSampleRate, DefaultMaxConcurrentBatches,
@@ -56,7 +56,7 @@ namespace Honeycomb
                 throw new ArgumentException (nameof (apiHost));
 
             transmission = new Transmission (maxConcurrentBatches, blockOnSend, blockOnResponse);
-            responses = transmission.Responses;
+            responses = new ResponseCollection (transmission.Responses);
 
             WriteKey = writeKey;
             DataSet = dataSet;
@@ -105,7 +105,7 @@ namespace Honeycomb
             get { return transmission == null; }
         }
 
-        public BlockingCollection<Response> Responses {
+        public ResponseCollection Responses {
             get {
                 return responses;
             }

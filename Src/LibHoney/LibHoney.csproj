@@ -42,6 +42,7 @@
     <Compile Include="SendException.cs" />
     <Compile Include="Transmission.cs" />
     <Compile Include="Response.cs" />
+    <Compile Include="ResponseCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
