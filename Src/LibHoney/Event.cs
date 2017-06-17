@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Honeycomb
 {
@@ -9,7 +10,7 @@ namespace Honeycomb
         LibHoney libHoney;
         FieldHolder fields = new FieldHolder ();
 
-        static readonly Random rand = new Random ();
+        static readonly ThreadLocal<Random> rand = new ThreadLocal<Random> (() => new Random ());
 
         public Event (LibHoney libHoney)
             : this (libHoney,
@@ -167,7 +168,10 @@ namespace Honeycomb
 
         static bool ShouldDrop (int rate)
         {
-            return rand.Next (1, rate + 1) != 1;
+            if (rate <= 1) // No need to generate a random.
+                return false;
+            
+            return rand.Value.Next (1, rate + 1) != 1;
         }
 
         public string ToJSON ()
