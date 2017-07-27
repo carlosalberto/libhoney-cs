@@ -86,6 +86,7 @@ namespace Honeycomb.Tests
             Assert.Equal (true, t.BlockOnResponse);
             Assert.NotNull (t.Responses);
             Assert.Equal (0, t.Responses.Count);
+            Assert.Equal (false, t.Responses.IsAddingCompleted);
             Assert.Equal (Transmission.DefaultMaxPendingResponses, t.Responses.BoundedCapacity);
             Assert.NotNull (t.PendingEvents);
             Assert.Equal (0, t.PendingEvents.Count);
@@ -139,14 +140,28 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
-        public void DisposeResponsesFull ()
+        public void DisposeResponses ()
         {
-            var t =  new Transmission (1, false, false, 1, 1, 1);
-            t.Responses.Add (new Response ());
+            var t = new Transmission (1, false, false, 1, 1, 1);
 
-            // Shouldn't be causing an error nor stay waiting,
-            // even if the responses queue is full.
+            Task.Run (() => {
+                Server.ServeOne (200);
+            });
+            Server.WaitReady ();
+
+            t.Send (SampleEvent);
             t.Dispose ();
+
+            Assert.Equal (1, t.Responses.Count);
+            Assert.True (t.Responses.IsAddingCompleted);
+            Assert.False (t.Responses.IsCompleted);
+
+            Response res;
+            t.Responses.TryTake (out res);
+            Assert.NotNull (res);
+            Assert.Equal (0, t.Responses.Count);
+            Assert.True (t.Responses.IsAddingCompleted);
+            Assert.True (t.Responses.IsCompleted);
         }
 
         [Fact]

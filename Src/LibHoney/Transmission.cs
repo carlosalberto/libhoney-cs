@@ -124,8 +124,8 @@ namespace Honeycomb
             // Wait for our threads to be done and be signaled.
             countdownEv.Wait ();
 
-            // Try to signal to the responses queue that nothing more is coming
-            responses.TryAdd (null);
+            // Signal to the responses queue that nothing more is coming.
+            responses.CompleteAdding ();
 
             pending.Dispose ();
             client.Dispose ();
