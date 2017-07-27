@@ -64,13 +64,12 @@ namespace Honeycomb
             for (int i = 0; i < MaxConcurrentBatches; i++) {
                 var t = new Thread (() => {
                     try {
-                        while (true) {
-                            var ev = pending.Take ();
-                            if (ev == null) // Signaled we are stopping the task.
-                                break;
-
+                        // Wait indefinitely for incoming items,
+                        // till adding is marked as complete.
+                        Event ev;
+                        while (pending.TryTake (out ev, -1))
                             DoSend (ev);
-                        }
+
                     } catch (Exception exc) {
                         // Unexpected error - report it and let the thread be done.
                         var res = new Response () {
@@ -117,9 +116,8 @@ namespace Honeycomb
 
             disposed = true;
 
-            // Let our threads know we are done (without forcing a cancellation).
-            for (int i = 0; i < MaxConcurrentBatches; i++)
-                pending.Add (null);
+            // Let our threads know we are done adding items.
+            pending.CompleteAdding ();
 
             // Wait for our threads to be done and be signaled.
             countdownEv.Wait ();
