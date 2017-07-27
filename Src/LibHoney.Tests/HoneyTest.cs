@@ -162,6 +162,16 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
+        public void Responses ()
+        {
+            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
+
+            Assert.Equal (true, libHoney.Responses != null);
+            Assert.Equal (false, libHoney.Responses.IsAddingCompleted);
+            Assert.Equal (false, libHoney.Responses.IsCompleted);
+        }
+
+        [Fact]
         public void AddNull ()
         {
             var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
@@ -206,8 +216,9 @@ namespace Honeycomb.Tests
             libHoney.Dispose ();
 
             Assert.Equal (true, libHoney.Responses != null);
-            Assert.Equal (1, libHoney.Responses.Count); // prev transmission, null signaling termination
-            Assert.Equal (null, libHoney.Responses.Take ());
+            Assert.Equal (0, libHoney.Responses.Count);
+            Assert.Equal (true, libHoney.Responses.IsAddingCompleted);
+            Assert.Equal (true, libHoney.Responses.IsCompleted);
         }
 
         [Fact]
@@ -268,6 +279,8 @@ namespace Honeycomb.Tests
             Assert.Equal (libHoney.Transmission.Responses, libHoney.Responses);
 
             Assert.Equal (true, libHoney.Transmission.Responses.BoundedCapacity > 1);
+            Assert.Equal (false, libHoney.Transmission.Responses.IsAddingCompleted);
+            Assert.Equal (false, libHoney.Transmission.Responses.IsCompleted);
         }
 
         [Fact]
