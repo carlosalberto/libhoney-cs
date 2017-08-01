@@ -77,6 +77,12 @@ namespace Honeycomb.Tests
 
             // maxConcurrentBatches
             excThrown = false;
+            try { new LibHoney ("abc", "def", 0); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+
+            excThrown = false;
+            try { new LibHoney ("abc", "def", -1); } catch (ArgumentOutOfRangeException) { excThrown = true; }
+
+            excThrown = false;
             try { new LibHoney ("abc", "def", "ghi", 1, 0); } catch (ArgumentOutOfRangeException) { excThrown = true; }
             Assert.True (excThrown);
 

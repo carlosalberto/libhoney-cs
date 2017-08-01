@@ -24,6 +24,12 @@ namespace Honeycomb
         {
         }
 
+        public LibHoney (string writeKey, string dataSet, int maxConcurrentBatches)
+            : this (writeKey, dataSet, DefaultApiHost, DefaultSampleRate, maxConcurrentBatches,
+                    DefaultBlock, DefaultBlock)
+        {
+        }
+
         public LibHoney (string writeKey, string dataSet, string apiHost)
             : this (writeKey, dataSet, apiHost, DefaultSampleRate, DefaultMaxConcurrentBatches,
                     DefaultBlock, DefaultBlock)
@@ -64,12 +70,6 @@ namespace Honeycomb
             SampleRate = sampleRate;
             BlockOnSend = blockOnSend;
             BlockOnResponse = blockOnResponse;
-        }
-
-        public LibHoney (string writeKey, string dataSet, int maxConcurrentBatches)
-            : this (writeKey, dataSet, DefaultApiHost, DefaultSampleRate, maxConcurrentBatches,
-            DefaultBlock, DefaultBlock)
-        {
         }
 
         internal void Reset ()
