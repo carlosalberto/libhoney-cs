@@ -272,7 +272,7 @@ namespace Honeycomb.Tests
         [Fact]
         public void InternalStateAfterInit ()
         {
-            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
+            var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 3);
             libHoney.AddField ("counter", 13);
             libHoney.AddField ("value", DateTime.Now);
             libHoney.AddDynamicField ("dynamic_value", () => DateTime.Now);
@@ -281,6 +281,7 @@ namespace Honeycomb.Tests
             Assert.Equal (2, libHoney.Fields.Fields.Count);
             Assert.Equal (1, libHoney.Fields.DynamicFields.Count);
             Assert.Equal (true, libHoney.Transmission != null);
+            Assert.Equal (3, libHoney.Transmission.MaxConcurrentBatches);
             Assert.Equal (true, libHoney.Responses != null);
             Assert.Equal (libHoney.Transmission.Responses, libHoney.Responses);
 
