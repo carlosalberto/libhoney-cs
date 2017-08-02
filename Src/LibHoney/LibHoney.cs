@@ -177,5 +177,15 @@ namespace Honeycomb
             ev.Add (data);
             ev.Send ();
         }
+
+        public void SendNow (string name, object value)
+        {
+            if (IsDisposed)
+                throw new SendException ("Tried to send on a closed libhoney");
+
+            var ev = new Event (this);
+            ev.AddField (name, value);
+            ev.Send ();
+        }
     }
 }

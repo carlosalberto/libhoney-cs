@@ -246,6 +246,10 @@ namespace Honeycomb.Tests
             bool excThrown = false;
             try { libHoney.SendNow (null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.True (excThrown);
+
+            excThrown = false;
+            try { libHoney.SendNow (null, "value"); } catch (ArgumentNullException) { excThrown = true; }
+            Assert.True (excThrown);
         }
 
         [Fact]
@@ -256,6 +260,10 @@ namespace Honeycomb.Tests
 
             bool excThrown = false;
             try { libHoney.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
+            Assert.True (excThrown);
+
+            excThrown = false;
+            try { libHoney.SendNow ("name", "value"); } catch (SendException) { excThrown = true; }
             Assert.True (excThrown);
         }
 
