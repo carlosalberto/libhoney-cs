@@ -50,6 +50,23 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
+        public void Consume2 ()
+        {
+            var coll = new ResponseCollection (new BlockingCollection<Response> ());
+            coll.Responses.Add (new Response ());
+            coll.Responses.Add (new Response ());
+
+            Response response1, response2, response3;
+            coll.TryTake (out response1, 100);
+            coll.TryTake (out response2, -1);
+            coll.TryTake (out response3, 0);
+
+            Assert.NotNull (response1);
+            Assert.NotNull (response2);
+            Assert.Null (response3);
+        }
+
+        [Fact]
         public void Enumerate ()
         {
             var responses = new BlockingCollection<Response> ();

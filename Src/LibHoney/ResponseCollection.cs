@@ -45,6 +45,11 @@ namespace Honeycomb
             return responses.TryTake (out response, timeout);
         }
 
+        public bool TryTake (out Response response, int millisecondsTimeout)
+        {
+            return responses.TryTake (out response, millisecondsTimeout);
+        }
+
         IEnumerator IEnumerable.GetEnumerator ()
         {
             return ((IEnumerable)responses).GetEnumerator ();
