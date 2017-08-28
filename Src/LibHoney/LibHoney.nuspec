@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$-alpha</version>
+    <title>$title$</title>
+    <authors>Carlos Alberto Cortez, Chris Toshok</authors>
+    <owners>carlosalberto</owners>
+    <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <projectUrl>https://github.com/carlosalberto/libhoney-cs</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>.Net library for sending events to Honeycomb.</description>
+    <copyright>Copyright 2017 Carlos Alberto Cortez</copyright>
+    <tags>libhoney honeycomb</tags>
+  </metadata>
+</package>
