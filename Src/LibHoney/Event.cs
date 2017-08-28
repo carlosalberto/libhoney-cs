@@ -5,6 +5,10 @@ using System.Threading;
 
 namespace Honeycomb
 {
+    /// <summary>
+    /// Hold data that can be sent to Honeycomb. It can also
+    /// specify overrides of the config settings.
+    /// </summary>
     public class Event
     {
         LibHoney libHoney;
@@ -12,18 +16,27 @@ namespace Honeycomb
 
         static readonly ThreadLocal<Random> rand = new ThreadLocal<Random> (() => new Random ());
 
+        /// <summary>
+        /// Initializes Event belonging to a LibHoney object.
+        /// </summary>
         public Event (LibHoney libHoney)
             : this (libHoney,
                     Enumerable.Empty<KeyValuePair<string, object>> (), Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
+        /// <summary>
+        /// Initializes Event belonging to a LibHoney object.
+        /// </summary>
         public Event (LibHoney libHoney, IEnumerable<KeyValuePair<string, object>> data)
             : this (libHoney,
                     data, Enumerable.Empty<KeyValuePair<string, Func<object>>> ())
         {
         }
 
+        /// <summary>
+        /// Initializes Event belonging to a LibHoney object.
+        /// </summary>
         public Event (LibHoney libHoney,
                       IEnumerable<KeyValuePair<string, object>> data, IEnumerable<KeyValuePair<string, Func<object>>> dynFields)
         {
@@ -75,20 +88,37 @@ namespace Honeycomb
         {
         }
 
+        /// <summary>
+        /// Hostname for the Honeycomb API server to which to send this event.
+        /// </summary>
+        /// <value>The API hostname.</value>
         public string ApiHost {
             get;
             internal set;
         }
 
+        /// <summary>
+        /// DateTime containing the creation time of this Event.
+        /// </summary>
+        /// <value>The creation time.</value>
         public DateTime CreatedAt {
             get;
             internal set;
         }
 
+        /// <summary>
+        /// Returns the creation time of this Event as a ISO
+        /// datetime string.
+        /// </summary>
+        /// <value>The creation time as a ISO datetime string.</value>
         public string CreatedAtISO {
             get { return CreatedAt.ToString ("O"); }
         }
 
+        /// <summary>
+        /// Name of the Honeycomb dataset to which to send these events.
+        /// </summary>
+        /// <value>The data set.</value>
         public string DataSet {
             get;
             internal set;
@@ -98,21 +128,39 @@ namespace Honeycomb
             get { return fields; }
         }
 
+        /// <summary>
+        /// Field for the user to add in data that will be handed back on
+        /// Response object read off the responses queue. It is not sent to
+        /// Honeycomb with the event.
+        /// </summary>
+        /// <value>The metadata.</value>
         public object Metadata {
             get;
             set;
         }
 
+        /// <summary>
+        /// Rate at which to sample this event.
+        /// </summary>
+        /// <value>The sample rate.</value>
         public int SampleRate {
             get;
             set;
         }
 
+        /// <summary>
+        /// Honeycomb authentication token.
+        /// </summary>
+        /// <value>The write key.</value>
         public string WriteKey {
             get;
             internal set;
         }
 
+        /// <summary>
+        /// Adds data to this event.
+        /// </summary>
+        /// <param name="data">Data.</param>
         public void Add (IEnumerable<KeyValuePair<string, object>> data)
         {
             if (data == null)
@@ -121,6 +169,11 @@ namespace Honeycomb
             fields.Add (data);
         }
 
+        /// <summary>
+        /// Adds a single metric to this event.
+        /// </summary>
+        /// <param name="name">Name of the metric.</param>
+        /// <param name="name">Value of the metric.</param>
         public void AddField (string name, object value)
         {
             if (name == null)
@@ -129,12 +182,23 @@ namespace Honeycomb
             fields.AddField (name, value);
         }
 
-        // Convenience method.
+        /// <summary>
+        /// Clones this Event.
+        /// </summary>
         public Event Clone ()
         {
             return new Event (this);
         }
 
+        /// <summary>
+        /// Dispatches the event to be sent to Honeycomb, sampling if necessary.
+        /// 
+        /// If you have sampling enabled
+        /// (i.e. SampleRate >1), Send will only actually transmit data with a
+        /// probability of 1/SampleRate. No error is returned whether or not traffic
+        /// is sampled, however, the Response sent down the response queue will
+        /// indicate the event was sampled in the ErrorMessage property.
+        /// </summary>
         public void Send ()
         {
             if (libHoney.IsClosed)
@@ -148,6 +212,14 @@ namespace Honeycomb
             SendPreSampled ();
         }
 
+        /// <summary>
+        /// Dispatches the event to be sent to Honeycomb.
+        /// 
+        /// Sampling is assumed to have already happened. SendPresampled will dispatch
+        /// every event handed to it, and pass along the sample rate. Use this instead of
+        /// Send() when the calling function handles the logic around which events to
+        /// drop when sampling.
+        /// </summary>
         public void SendPreSampled ()
         {
             if (libHoney.IsClosed)
@@ -174,6 +246,10 @@ namespace Honeycomb
             return rand.Value.Next (1, rate + 1) != 1;
         }
 
+        /// <summary>
+        /// Returns the data of this event as a JSON string.
+        /// </summary>
+        /// <returns>The json.</returns>
         public string ToJSON ()
         {
             return fields.ToJSON ();
