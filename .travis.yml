@@ -5,5 +5,5 @@ install:
   - nuget install xunit -Version 2.2.0 -OutputDirectory testrunner
   - nuget install xunit.runner.console -Version 2.2.0 -OutputDirectory testrunner
 script:
-  - xbuild /p:Configuration=Release Src/LibHoney.sln
-  - mono ./testrunner/xunit.runner.console.2.2.0/tools/xunit.console.exe ./Src/LibHoney.Tests/bin/Release/LibHoney.Tests.dll -parallel none
+  - xbuild /p:Configuration=Debug Src/LibHoney.sln
+  - mono ./testrunner/xunit.runner.console.2.2.0/tools/xunit.console.exe ./Src/LibHoney.Tests/bin/Debug/LibHoney.Tests.dll -parallel none
