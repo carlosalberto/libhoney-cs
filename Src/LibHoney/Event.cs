@@ -137,7 +137,7 @@ namespace Honeycomb
 
         public void Send ()
         {
-            if (libHoney.IsDisposed)
+            if (libHoney.IsClosed)
                 throw new SendException ("Tried to send on a closed libhoney");
 
             if (ShouldDrop (SampleRate)) {
@@ -150,7 +150,7 @@ namespace Honeycomb
 
         public void SendPreSampled ()
         {
-            if (libHoney.IsDisposed)
+            if (libHoney.IsClosed)
                 throw new SendException ("Tried to send on a closed libhoney");
             if (fields.IsEmpty)
                 throw new SendException ("No metrics added to event. Will not send empty event");

@@ -168,7 +168,7 @@ namespace Honeycomb.Tests
             var honey = GetLibHoney ();
             var b = new Builder (honey);
             b.AddField ("key1", "value1"); // Add data to have a valid event.
-            honey.Dispose ();
+            honey.Close ();
 
             bool excThrown = false;
             try { b.SendNow (); } catch (SendException) { excThrown = true; }

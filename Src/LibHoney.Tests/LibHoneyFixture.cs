@@ -12,7 +12,7 @@ namespace Honeycomb.Tests
 
         public void Dispose ()
         {
-            LibHoney.Dispose ();
+            LibHoney.Close ();
         }
 
         public LibHoney LibHoney {
