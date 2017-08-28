@@ -24,6 +24,7 @@
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\LibHoney.xml</DocumentationFile>
     <ConsolePause>false</ConsolePause>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\..\keys\LibHoney.snk</AssemblyOriginatorKeyFile>
