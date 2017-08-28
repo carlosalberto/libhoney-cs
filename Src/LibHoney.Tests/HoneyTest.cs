@@ -16,7 +16,7 @@ namespace Honeycomb.Tests
         public void Dispose ()
         {
             if (LibHoney != null)
-                LibHoney.Dispose ();
+                LibHoney.Close ();
         }
 
         [Fact]
@@ -216,10 +216,10 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
-        public void AfterDispose ()
+        public void AfterClose ()
         {
             var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", "http://myhost", 3, 6, true, true);
-            libHoney.Dispose ();
+            libHoney.Close ();
 
             Assert.Equal (true, libHoney.Responses != null);
             Assert.Equal (0, libHoney.Responses.Count);
@@ -228,14 +228,14 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
-        public void DisposeMultiple ()
+        public void CloseMultiple ()
         {
             var libHoney = new LibHoney ("key1", "HelloHoney", 1);
-            libHoney.Dispose ();
+            libHoney.Close ();
 
             // Again, a few times.
-            libHoney.Dispose ();
-            libHoney.Dispose ();
+            libHoney.Close ();
+            libHoney.Close ();
         }
 
         [Fact]
@@ -253,10 +253,10 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
-        public void SendNowDisposed ()
+        public void SendNowClosed ()
         {
             var libHoney = new LibHoney ("key1", "HelloHoney", 1);
-            libHoney.Dispose ();
+            libHoney.Close ();
 
             bool excThrown = false;
             try { libHoney.SendNow (new Dictionary<string, object> ()); } catch (SendException) { excThrown = true; }
@@ -299,12 +299,12 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
-        public void InternalStateAfterDispose ()
+        public void InternalStateAfterClose ()
         {
             var libHoney = LibHoney = new LibHoney ("key1", "HelloHoney", 1);
-            libHoney.Dispose ();
+            libHoney.Close ();
 
-            Assert.Equal (true, libHoney.IsDisposed);
+            Assert.Equal (true, libHoney.IsClosed);
             Assert.Null (libHoney.Transmission);
             Assert.NotNull (libHoney.Responses);
         }

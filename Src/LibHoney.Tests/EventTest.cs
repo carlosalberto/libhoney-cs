@@ -145,7 +145,7 @@ namespace Honeycomb.Tests
             // Create our own LibHoney so we can dispose it right away.
             var honey = new LibHoney ("key1", "data1");
             var ev = new Event (honey);
-            honey.Dispose ();
+            honey.Close ();
 
             bool excThrown = false;
             try { ev.Send (); } catch (SendException) { excThrown = true; }
@@ -167,7 +167,7 @@ namespace Honeycomb.Tests
             // Create our own LibHoney so we can dispose it right away.
             var honey = new LibHoney ("key1", "data1");
             var ev = new Event (honey);
-            honey.Dispose ();
+            honey.Close ();
 
             bool excThrown = false;
             try { ev.SendPreSampled (); } catch (SendException) { excThrown = true; }

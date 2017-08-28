@@ -101,7 +101,7 @@ namespace Honeycomb
             get { return fields; }
         }
 
-        internal bool IsDisposed {
+        internal bool IsClosed {
             get { return transmission == null; }
         }
 
@@ -151,13 +151,18 @@ namespace Honeycomb
             fields.AddDynamicField (name, func);
         }
 
-        public void Dispose ()
+        public void Close ()
         {
             if (transmission == null)
                 return;
-            
+
             transmission.Dispose ();
             transmission = null;
+        }
+
+        void IDisposable.Dispose ()
+        {
+            Close ();
         }
 
         static bool IsSchemeSupported (string scheme)
@@ -170,7 +175,7 @@ namespace Honeycomb
             if (data == null)
                 throw new ArgumentNullException (nameof (data));
 
-            if (IsDisposed)
+            if (IsClosed)
                 throw new SendException ("Tried to send on a closed libhoney");
 
             var ev = new Event (this);
@@ -180,7 +185,7 @@ namespace Honeycomb
 
         public void SendNow (string name, object value)
         {
-            if (IsDisposed)
+            if (IsClosed)
                 throw new SendException ("Tried to send on a closed libhoney");
 
             var ev = new Event (this);
