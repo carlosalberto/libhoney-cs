@@ -12,7 +12,7 @@ namespace Honeycomb
         /// <summary>
         /// Honeycomb API version.
         /// </summary>
-        public const string Version = "1.0.0.0";
+        public const string Version = "1.0.0";
 
         /// <summary>
         /// Default api host for Honeycomb.
