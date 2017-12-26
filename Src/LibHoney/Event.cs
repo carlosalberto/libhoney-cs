@@ -94,7 +94,7 @@ namespace Honeycomb
         /// <value>The API hostname.</value>
         public string ApiHost {
             get;
-            internal set;
+            set;
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Honeycomb
         /// <value>The data set.</value>
         public string DataSet {
             get;
-            internal set;
+            set;
         }
 
         internal FieldHolder Fields {
@@ -154,7 +154,7 @@ namespace Honeycomb
         /// <value>The write key.</value>
         public string WriteKey {
             get;
-            internal set;
+            set;
         }
 
         /// <summary>
@@ -224,8 +224,15 @@ namespace Honeycomb
         {
             if (libHoney.IsClosed)
                 throw new SendException ("Tried to send on a closed libhoney");
+            
             if (fields.IsEmpty)
                 throw new SendException ("No metrics added to event. Will not send empty event");
+            if (ApiHost == null)
+                throw new SendException ("No ApiHost for Honeycomb. Will not send event");
+            if (WriteKey == null)
+                throw new SendException ("No WriteKey for Honeycomb. Will not send event");
+            if (DataSet == null)
+                throw new SendException ("No DataSet for Honeycomb. Will not send event");
 
             libHoney.Transmission.Send (this);
         }

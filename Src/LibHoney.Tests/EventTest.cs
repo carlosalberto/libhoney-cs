@@ -79,6 +79,54 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
+        public void ApiHost ()
+        {
+            var ev = new Event (GetLibHoney ());
+
+            ev.ApiHost = null;
+            Assert.Null (ev.ApiHost);
+
+            ev.ApiHost = "https://unknown";
+            Assert.Equal ("https://unknown", ev.ApiHost);
+        }
+
+        [Fact]
+        public void DataSet ()
+        {
+            var ev = new Event (GetLibHoney ());
+
+            ev.DataSet = null;
+            Assert.Null (ev.DataSet);
+
+            ev.DataSet = "unknown";
+            Assert.Equal ("unknown", ev.DataSet);
+        }
+
+        [Fact]
+        public void Metadata ()
+        {
+            var ev = new Event (GetLibHoney ());
+
+            ev.Metadata = 4;
+            Assert.Equal (4, ev.Metadata);
+
+            ev.Metadata = null;
+            Assert.Equal (null, ev.Metadata);
+        }
+
+        [Fact]
+        public void WriteKey ()
+        {
+            var ev = new Event (GetLibHoney ());
+
+            ev.WriteKey = null;
+            Assert.Null (ev.WriteKey);
+
+            ev.WriteKey = "aaa-bbb-ccc";
+            Assert.Equal ("aaa-bbb-ccc", ev.WriteKey);
+        }
+
+        [Fact]
         public void Clone ()
         {
             var ev = new Event (GetLibHoney (),
@@ -125,18 +173,6 @@ namespace Honeycomb.Tests
             excThrown = false;
             try { ev.AddField ("abc", null); } catch (ArgumentNullException) { excThrown = true; }
             Assert.False (excThrown);
-        }
-
-        [Fact]
-        public void Metadata ()
-        {
-            var ev = new Event (GetLibHoney ());
-
-            ev.Metadata = 4;
-            Assert.Equal (4, ev.Metadata);
-
-            ev.Metadata = null;
-            Assert.Equal (null, ev.Metadata);
         }
 
         [Fact]
@@ -202,6 +238,34 @@ namespace Honeycomb.Tests
             Assert.Equal (TimeSpan.Zero, res.Duration);
             Assert.Equal (0, (int) res.StatusCode);
             Assert.Null (res.Body);
+        }
+
+        [Fact]
+        public void SendInvalidProperties ()
+        {
+            bool excThrown;
+            Event ev;
+
+            // ApiHost
+            excThrown = false;
+            ev = new Event (GetLibHoney ());
+            ev.ApiHost = null;
+            try { ev.SendPreSampled (); } catch (SendException) { excThrown = true; }
+            Assert.True (excThrown);
+
+            // WriteKey
+            excThrown = false;
+            ev = new Event (GetLibHoney ());
+            ev.WriteKey = null;
+            try { ev.SendPreSampled (); } catch (SendException) { excThrown = true; }
+            Assert.True (excThrown);
+
+            // DataSet
+            excThrown = false;
+            ev = new Event (GetLibHoney ());
+            ev.DataSet = null;
+            try { ev.SendPreSampled (); } catch (SendException) { excThrown = true; }
+            Assert.True (excThrown);
         }
 
         [Fact]
