@@ -74,6 +74,42 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
+        public void DataSet ()
+        {
+            var b = new Builder (GetLibHoney ());
+
+            b.DataSet = null;
+            Assert.Null (b.DataSet);
+
+            b.DataSet = "unknown";
+            Assert.Equal ("unknown", b.DataSet);
+        }
+
+        [Fact]
+        public void SampleRate ()
+        {
+            var b = new Builder (GetLibHoney ());
+
+            b.SampleRate = -1;
+            Assert.Equal (-1, b.SampleRate);
+
+            b.SampleRate = 100;
+            Assert.Equal (100, b.SampleRate);
+        }
+
+        [Fact]
+        public void WriteKey ()
+        {
+            var b = new Builder (GetLibHoney ());
+
+            b.WriteKey = null;
+            Assert.Null (b.WriteKey);
+
+            b.WriteKey = "aaa-bbb-ccc";
+            Assert.Equal ("aaa-bbb-ccc", b.WriteKey);
+        }
+
+        [Fact]
         public void AddNull ()
         {
             bool excThrown = false;
@@ -137,6 +173,24 @@ namespace Honeycomb.Tests
             Assert.Equal (honey.DataSet, ev.DataSet);
             Assert.Equal (honey.ApiHost, ev.ApiHost);
             Assert.Equal (honey.SampleRate, ev.SampleRate);
+        }
+
+        [Fact]
+        public void NewEventOverrideProperties ()
+        {
+            var honey = GetLibHoney ();
+
+            var b = new Builder (honey);
+            b.WriteKey = "aaa-bbb-ccc";
+            b.SampleRate = 5;
+            b.DataSet = "unknown";
+
+            var ev = b.NewEvent ();
+            Assert.Equal (true, ev != null);
+            Assert.Equal (b.WriteKey, ev.WriteKey);
+            Assert.Equal (b.DataSet, ev.DataSet);
+            Assert.Equal (b.SampleRate, ev.SampleRate);
+            Assert.Equal (honey.ApiHost, ev.ApiHost);
         }
 
         [Fact]

@@ -60,7 +60,7 @@ namespace Honeycomb
         /// <value>The data set.</value>
         public string DataSet {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Honeycomb
         /// <value>The sample rate.</value>
         public int SampleRate {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Honeycomb
         /// <value>The write key.</value>
         public string WriteKey {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
