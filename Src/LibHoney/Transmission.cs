@@ -23,10 +23,10 @@ namespace Honeycomb
         public const int DefaultMaxPendingEvents = 1000;
         public const int DefaultMaxPendingResponses = 2000;
 
-        const string HoneyTeamKey = "X-Hny-Team";
-        const string HoneySamplerate = "X-Hny-Samplerate";
-        const string HoneyEventTime = "X-Hny-Event-Time";
-        const string HoneyUserAgent = "libhoney-net/" + LibHoney.Version;
+        internal const string HoneyTeamKey = "X-Hny-Team";
+        internal const string HoneySamplerate = "X-Hny-Samplerate";
+        internal const string HoneyEventTime = "X-Hny-Event-Time";
+        internal const string HoneyUserAgent = "libhoney-net/" + LibHoney.Version;
 
         const string HoneyEventsUrl = "/1/events/";
 

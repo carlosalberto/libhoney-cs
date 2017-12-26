@@ -221,8 +221,10 @@ namespace Honeycomb.Tests
             Assert.Equal ("{\"field0\":0,\"field1\":\"without value\",\"field2\":null}", payload);
 
             var headers = Server.Headers [0];
-            Assert.Equal ("key1", headers.Get ("X-Hny-Team"));
-            Assert.Equal ("0", headers.Get ("X-Hny-Samplerate"));
+            Assert.Equal ("key1", headers.Get (Transmission.HoneyTeamKey));
+            Assert.Equal ("0", headers.Get (Transmission.HoneySamplerate));
+            Assert.Equal (Transmission.HoneyUserAgent, headers.Get ("User-Agent"));
+            Assert.NotNull (headers.Get (Transmission.HoneyEventTime));
         }
 
         [Fact]
