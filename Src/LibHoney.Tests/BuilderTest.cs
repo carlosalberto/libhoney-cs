@@ -150,15 +150,17 @@ namespace Honeycomb.Tests
             var honey = GetLibHoney ();
 
             var b = new Builder (honey);
-            Assert.Equal (honey.WriteKey, b.WriteKey);
-            Assert.Equal (honey.DataSet, b.DataSet);
-            Assert.Equal (honey.SampleRate, b.SampleRate);
+            b.WriteKey = "aaa-bbb-ccc";
+            b.DataSet = "unknown";
+            b.ApiHost = "https://unknown";
+            b.SampleRate = 5;
 
             var clone = b.Clone ();
-            Assert.Equal (true, clone != null);
-            Assert.Equal (b.WriteKey, clone.WriteKey);
-            Assert.Equal (b.DataSet, clone.DataSet);
-            Assert.Equal (b.SampleRate, clone.SampleRate);
+            Assert.NotSame (b, clone);
+            Assert.Equal ("aaa-bbb-ccc", clone.WriteKey);
+            Assert.Equal ("unknown", clone.DataSet);
+            Assert.Equal ("https://unknown", clone.ApiHost);
+            Assert.Equal (5, clone.SampleRate);
         }
 
         [Fact]
@@ -182,15 +184,16 @@ namespace Honeycomb.Tests
 
             var b = new Builder (honey);
             b.WriteKey = "aaa-bbb-ccc";
-            b.SampleRate = 5;
             b.DataSet = "unknown";
+            b.ApiHost = "https://unknown";
+            b.SampleRate = 5;
 
             var ev = b.NewEvent ();
-            Assert.Equal (true, ev != null);
-            Assert.Equal (b.WriteKey, ev.WriteKey);
-            Assert.Equal (b.DataSet, ev.DataSet);
-            Assert.Equal (b.SampleRate, ev.SampleRate);
-            Assert.Equal (honey.ApiHost, ev.ApiHost);
+            Assert.NotNull (ev);
+            Assert.Equal ("aaa-bbb-ccc", ev.WriteKey);
+            Assert.Equal ("unknown", ev.DataSet);
+            Assert.Equal ("https://unknown", ev.ApiHost);
+            Assert.Equal (5, ev.SampleRate);
         }
 
         [Fact]
