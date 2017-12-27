@@ -42,6 +42,6 @@ public class ResponsesExample
         }
 
         Task.WaitAll (tasks);
-        honey.Dispose ();
+        honey.Close ();
     }
 }

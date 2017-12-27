@@ -285,7 +285,8 @@ namespace Honeycomb
         /// <summary>
         /// Shortcut to create an event, add a single metric, and send the event.
         /// </summary>
-        /// <param name="data">Data.</param>
+        /// <param name="name">Name of the single metric to send.</param>
+        /// <param name="value">Value of the single metric to send.</param>
         public void SendNow (string name, object value)
         {
             if (IsClosed)

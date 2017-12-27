@@ -174,7 +174,7 @@ namespace Honeycomb
         /// Adds a single metric to this event.
         /// </summary>
         /// <param name="name">Name of the metric.</param>
-        /// <param name="name">Value of the metric.</param>
+        /// <param name="value">Value of the metric.</param>
         public void AddField (string name, object value)
         {
             if (name == null)

@@ -62,6 +62,6 @@ public class FactorialExample
         RunFact (31, 32, new Builder (honey, new Dictionary<string, object> () { ["range"] = "high" }));
 
         honey.SendNow ("status", "sending now");
-        honey.Dispose ();
+        honey.Close ();
     }
 }
