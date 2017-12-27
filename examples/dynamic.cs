@@ -37,6 +37,6 @@ public class DynamicExample
         }
 
         Task.WaitAll (tasks);
-        honey.Dispose ();
+        honey.Close ();
     }
 }

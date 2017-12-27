@@ -26,6 +26,6 @@ public class SimpleExample
         }
 
         // Close the client.
-        honey.Dispose ();
+        honey.Close ();
     }
 }
