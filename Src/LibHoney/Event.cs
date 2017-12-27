@@ -112,7 +112,7 @@ namespace Honeycomb
         /// datetime string.
         /// </summary>
         /// <value>The creation time as a ISO datetime string.</value>
-        public string CreatedAtISO {
+        public string TimestampISO {
             get { return Timestamp.ToString ("O"); }
         }
 
