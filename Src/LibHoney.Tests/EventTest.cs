@@ -127,6 +127,17 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
+        public void Timestamp ()
+        {
+            var ev = new Event (GetLibHoney ());
+
+            DateTime dt = DateTime.Now + TimeSpan.FromSeconds (100);
+            ev.Timestamp = dt;
+            Assert.Equal (dt, ev.Timestamp);
+            Assert.Equal (dt.ToString ("O"), ev.TimestampISO);
+        }
+
+        [Fact]
         public void Clone ()
         {
             var ev = new Event (GetLibHoney (),
@@ -146,7 +157,7 @@ namespace Honeycomb.Tests
             Assert.Equal (ev.ApiHost, clone.ApiHost);
             Assert.Equal (ev.SampleRate, clone.SampleRate);
             Assert.Equal (ev.Metadata, clone.Metadata);
-            Assert.Equal (ev.CreatedAt, clone.CreatedAt);
+            Assert.Equal (ev.Timestamp, clone.Timestamp);
 
             Assert.NotSame (ev.Fields, clone.Fields);
             Assert.Equal (ev.Fields.IsEmpty, ev.Fields.IsEmpty);

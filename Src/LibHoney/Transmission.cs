@@ -179,7 +179,7 @@ namespace Honeycomb
                 req.Content.Headers.ContentEncoding.Add ("gzip");
                 req.Headers.Add (HoneyTeamKey, ev.WriteKey);
                 req.Headers.Add (HoneySamplerate, ev.SampleRate.ToString ());
-                req.Headers.Add (HoneyEventTime, ev.CreatedAtISO);
+                req.Headers.Add (HoneyEventTime, ev.TimestampISO);
 
                 HttpResponseMessage result = null;
                 DateTime start = DateTime.Now;
