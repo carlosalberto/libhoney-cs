@@ -127,6 +127,17 @@ namespace Honeycomb.Tests
         }
 
         [Fact]
+        public void Timestamp ()
+        {
+            var ev = new Event (GetLibHoney ());
+
+            DateTime dt = DateTime.Now + TimeSpan.FromSeconds (100);
+            ev.Timestamp = dt;
+            Assert.Equal (dt, ev.Timestamp);
+            Assert.Equal (dt.ToString ("O"), ev.TimestampISO);
+        }
+
+        [Fact]
         public void Clone ()
         {
             var ev = new Event (GetLibHoney (),

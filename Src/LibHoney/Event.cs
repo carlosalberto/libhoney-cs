@@ -104,7 +104,7 @@ namespace Honeycomb
         /// <value>The creation time.</value>
         public DateTime Timestamp {
             get;
-            internal set;
+            set;
         }
 
         /// <summary>
