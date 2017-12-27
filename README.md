@@ -1,4 +1,7 @@
-# libhoney [![Build Status](https://travis-ci.org/carlosalberto/libhoney-cs.svg?branch=master)](https://travis-ci.org/carlosalberto/libhoney-cs)
+# libhoney
+
+[![NuGet version (LibHoney)](https://img.shields.io/nuget/v/LibHoney.svg?style=flat-square)](https://www.nuget.org/packages/LibHoney/)
+[![Build Status](https://travis-ci.org/carlosalberto/libhoney-cs.svg?branch=master)](https://travis-ci.org/carlosalberto/libhoney-cs)
 
 .Net library for sending events to [Honeycomb](https://honeycomb.io).
 
