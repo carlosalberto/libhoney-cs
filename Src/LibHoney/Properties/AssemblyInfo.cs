@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("0.9.0.0")]
+[assembly: AssemblyVersion("0.9.1.0")]
 
 #if DEBUG
 [assembly: InternalsVisibleTo ("LibHoney.Tests")]
