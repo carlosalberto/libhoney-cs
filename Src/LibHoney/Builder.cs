@@ -51,7 +51,17 @@ namespace Honeycomb
             // Stash these values away for Send()
             WriteKey = libHoney.WriteKey;
             DataSet = libHoney.DataSet;
+            ApiHost = libHoney.ApiHost;
             SampleRate = libHoney.SampleRate;
+        }
+
+        /// <summary>
+        /// Hostname for the Honeycomb API server to which to send events.
+        /// </summary>
+        /// <value>The API hostname.</value>
+        public string ApiHost {
+            get;
+            set;
         }
 
         /// <summary>
@@ -136,6 +146,7 @@ namespace Honeycomb
             builder.fields.Add (fields);
             builder.WriteKey = WriteKey;
             builder.DataSet = DataSet;
+            builder.ApiHost = ApiHost;
             builder.SampleRate = SampleRate;
             return builder;
         }
@@ -147,7 +158,7 @@ namespace Honeycomb
         /// <returns>The event.</returns>
         public Event NewEvent ()
         {
-            return new Event (libHoney, fields, WriteKey, DataSet, SampleRate);
+            return new Event (libHoney, fields, WriteKey, DataSet, ApiHost, SampleRate);
         }
 
         /// <summary>

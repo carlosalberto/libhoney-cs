@@ -62,11 +62,12 @@ namespace Honeycomb
             SampleRate = libHoney.SampleRate;
         }
 
-        internal Event (LibHoney libHoney, FieldHolder fh, string writeKey, string dataSet, int sampleRate)
+        internal Event (LibHoney libHoney, FieldHolder fh, string writeKey, string dataSet, string apiHost, int sampleRate)
             : this (libHoney, fh.Fields, fh.DynamicFields)
         {
             WriteKey = writeKey;
             DataSet = dataSet;
+            ApiHost = apiHost;
             SampleRate = sampleRate;
         }
 
