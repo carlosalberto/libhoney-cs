@@ -146,7 +146,7 @@ namespace Honeycomb.Tests
             Assert.Equal (ev.ApiHost, clone.ApiHost);
             Assert.Equal (ev.SampleRate, clone.SampleRate);
             Assert.Equal (ev.Metadata, clone.Metadata);
-            Assert.Equal (ev.CreatedAt, clone.CreatedAt);
+            Assert.Equal (ev.Timestamp, clone.Timestamp);
 
             Assert.NotSame (ev.Fields, clone.Fields);
             Assert.Equal (ev.Fields.IsEmpty, ev.Fields.IsEmpty);

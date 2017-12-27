@@ -55,7 +55,7 @@ namespace Honeycomb
             fields.EvaluateDynamicFields (); // Evalute all the dynamic fields
 
             // Stash these values away for Send()
-            CreatedAt = DateTime.Now;
+            Timestamp = DateTime.Now;
             WriteKey = libHoney.WriteKey;
             DataSet = libHoney.DataSet;
             ApiHost = libHoney.ApiHost;
@@ -76,7 +76,7 @@ namespace Honeycomb
             libHoney = ev.libHoney;
             fields.Add (ev.Fields);
 
-            CreatedAt = ev.CreatedAt;
+            Timestamp = ev.Timestamp;
             WriteKey = ev.WriteKey;
             DataSet = ev.DataSet;
             ApiHost = ev.ApiHost;
@@ -102,7 +102,7 @@ namespace Honeycomb
         /// DateTime containing the creation time of this Event.
         /// </summary>
         /// <value>The creation time.</value>
-        public DateTime CreatedAt {
+        public DateTime Timestamp {
             get;
             internal set;
         }
@@ -113,7 +113,7 @@ namespace Honeycomb
         /// </summary>
         /// <value>The creation time as a ISO datetime string.</value>
         public string CreatedAtISO {
-            get { return CreatedAt.ToString ("O"); }
+            get { return Timestamp.ToString ("O"); }
         }
 
         /// <summary>
